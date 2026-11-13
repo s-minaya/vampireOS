@@ -18,6 +18,7 @@ import { mountUpdate } from './screens/update.js';
 import { mountDebug } from './screens/debug.js';
 import { mountCrypt } from './screens/crypt.js';
 import { mountLetter } from './screens/letter.js';
+import { music } from './music.js';
 
 const SCREENS = {
   update: { mount: mountUpdate, theme: 'dark' },
@@ -52,6 +53,7 @@ function recall() {
 const app = {
   go(name, options) {
     if (dispose) dispose();
+    if (name === 'update') music.dispose(); // the song belongs to Debug Mode onwards
     stage.innerHTML = '';
     stage.className = `stage stage--${name}`;
     app.theme(SCREENS[name].theme);
@@ -101,6 +103,10 @@ function preload() {
 const params = new URLSearchParams(window.location.search);
 if (params.has('restart')) {
   remember('update');
+  music.dispose();
   window.history.replaceState(null, '', window.location.pathname);
 }
-preload().then(() => app.go(recall()));
+preload().then(() => {
+  app.go(recall());
+  music.restore(); // a reload keeps the (paused) player once the song has been started
+});

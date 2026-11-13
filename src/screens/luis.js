@@ -1,5 +1,6 @@
 import { createSpeechAudio } from '../speechAudio.js';
 import { createDialogue, bubble } from '../dialogue.js';
+import { music, TRACK } from '../music.js';
 import riffUrl from '../assets/luis-riff.mp3';
 import voiceUrl from '../assets/luis-voice.mp3';
 import neutralUrl from '../assets/luis-neutral.webp';
@@ -15,7 +16,8 @@ import bolt4 from '../assets/luis-bolt-4.webp';
 // from_luis.mp3: Luis's entrance. A terse system log, the lights go out, then he bursts in
 // (luis-crazy) on the guitar riff, with lightning, neon notes and sound waves timed to the
 // music. When the riff ends he settles into his neutral face and delivers his note through
-// the shared speech bubble with his sans voice. The full song and its player come later.
+// the shared speech bubble with his sans voice. Then his song's card: PLAY TRACK hands the
+// song to the persistent player (music.js), which outlives this scene.
 
 // Approved note (provisional English; see VAMPIREOS.md). One bubble per paragraph.
 const LINES = [
@@ -80,9 +82,20 @@ const scene = `
       <div class="lz-text">${bubble('LUIS')}</div>
     </div>
   </div>
-  <div class="console lz-after" data-ref="after" hidden>
-    <div class="console-label">ATTACHED TRACK</div>
-    <div class="console-lines"><div>videogame-theme.wav · 2:50</div><div class="c-dim">[ player pending ]</div></div>
+  <div class="win lz-track" data-ref="after" hidden>
+    <div class="win-bar"><div class="win-chip win-chip--caps">ATTACHED TRACK</div></div>
+    <div class="lz-track-body">
+      <div class="lz-track-head">
+        <img class="lz-track-note" src="${noteUrl}" alt="" draggable="false">
+        <div class="lz-track-id">
+          <div class="lz-track-name">${TRACK.title}</div>
+          <div class="lz-track-by">COMPOSED BY LUIS</div>
+        </div>
+        <span class="lz-track-eq" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+      </div>
+      <div class="lz-track-stats"><span>BACKEND CONTRIBUTIONS: <b class="is-zero">0</b> ·</span> <span>MUSICAL CONTRIBUTIONS: <b>1</b></span></div>
+      <button class="key key--primary key--md lz-track-play" data-ref="play">PLAY TRACK</button>
+    </div>
   </div>
 `;
 
@@ -166,6 +179,7 @@ export function mountLuis(host, { scope, onDone }) {
     volume: VOICE_VOLUME,
   });
   void voice.prepare(); // resumes the context while the gesture lasts, then decodes his voice
+  music.hold('luis'); // on a replay, the song waits for the riff and his note, then resumes
   const riff = ctx ? copy(files.riff).then((data) => ctx.decodeAudioData(data)) : Promise.reject(new Error('audio'));
   riff.catch(() => {});
   const dialogue = createDialogue({
@@ -322,12 +336,23 @@ export function mountLuis(host, { scope, onDone }) {
     });
   }
 
-  // After "Hope you like it, mate.": the track he is talking about, player still to come.
+  // After "Hope you like it, mate.": the track he is talking about. The full song starts only
+  // when David presses PLAY TRACK; the card's key follows the persistent player's state.
+  let unsubscribe = null;
+  const onPlay = () => music.toggle();
   function finish() {
     phase = 'done';
-    const next = ref('after');
-    next.hidden = false;
-    next.classList.add('enter');
+    const card = ref('after');
+    card.hidden = false;
+    card.classList.add('enter');
+    music.prepare();
+    const key = ref('play');
+    key.addEventListener('click', onPlay);
+    unsubscribe = music.subscribe(({ playing, time }) => {
+      card.classList.toggle('is-playing', playing);
+      key.textContent = playing ? 'PAUSE TRACK' : time > 0.5 ? 'RESUME TRACK' : 'PLAY TRACK';
+    });
+    music.release('luis');
     onDone?.();
   }
 
@@ -353,6 +378,9 @@ export function mountLuis(host, { scope, onDone }) {
       }
       dialogue.dispose();
       voice.dispose(); // closes the shared context
+      ref('play').removeEventListener('click', onPlay);
+      unsubscribe?.();
+      music.release('luis'); // leaving mid-entrance: the song carries on where it was
     },
   };
 }

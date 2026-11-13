@@ -78,7 +78,7 @@ API: `prepare()`, `startVoice()`, `stopVoice() → ms still audible`, `dispose()
 
 ## Luis: from_luis.mp3 (Debug Mode)
 
-Narrative: `VAMPIREOS.md` beat 3 (his note is the approved text in `LINES`). The song itself and its player are **not** implemented; the scene ends on an `ATTACHED TRACK … [ player pending ]` card.
+Narrative: `VAMPIREOS.md` beat 3 (his note is the approved text in `LINES`). The scene ends on the `ATTACHED TRACK` card for his song (`davids_theme.wav`); PLAY TRACK hands it to the persistent player (below).
 
 ### Files and assets
 
@@ -93,6 +93,8 @@ Narrative: `VAMPIREOS.md` beat 3 (his note is the approved text in `LINES`). The
 | `src/assets/luis-note.webp`, `luis-waves.webp` | Neon note (spawned per accent) and the sound-wave strip behind him. |
 | `src/assets/luis-riff.mp3` | The riff excerpt (below). |
 | `src/assets/luis-voice.mp3` | `sans-voice.mp3` as is. |
+| `src/music.js` | The song and its persistent player (one `<audio>`, the fixed `.mp` bar). Owned outside the screens. |
+| `src/assets/davids-theme.mp3` | `luis/videogame-theme.wav` (48 kHz/24-bit, 170.44 s, 49 MB) → MP3 256 kbps CBR, 48 kHz joint stereo, no gain change (5.2 MB). Encoded with `lamejs`, 16-bit TPDF dither. |
 
 Source art and audio live untracked in `luis/` at the repo root; keep originals out of `src/`.
 
@@ -113,7 +115,7 @@ Source art and audio live untracked in `luis/` at the repo root; keep originals 
 - `calm`: crazy frame fades out over the neutral one (0.3 s), `lz-settle` squash, waves collapse (`lz-waves-out`), bolt/note/flash layers fade to 0 in 0.35 s; all `is-on` / `is-pulse` / bob classes are removed.
 - 900 ms later `talking`: `.lz-bolts`, `.lz-notes`, `.lz-flash`, `.lz-waves`, `.lz-line` become `display: none`, the notes container is emptied, `.lz-text` appears and `dialogue.start(400)` runs. Effect animations deliberately have **no fill mode**: their base state is invisible, so nothing can be left on screen by a finished or cancelled animation. Keep it that way.
 - Talking uses `createDialogue` from `dialogue.js` with `mouth: .lz-luis`: `.is-speaking` runs `lz-flap` (0.5 s irregular open/close) on `.lz-mouth`; the voice is `createSpeechAudio` over `luis-voice.mp3` at `VOICE_VOLUME` 0.42 (the clip is ~4 dB hotter than Sofi's). The engine maps it to one 0.9 s babble phrase (0.645–1.55 s) and chains it while letters type. A tap on the window body advances, as with Sofi.
-- After the last line: `dialogue.quiet()` + 500 ms → the `ATTACHED TRACK` card (`.enter`) and `onDone`.
+- After the last line: `dialogue.quiet()` + 500 ms → the `.lz-track` card (`.enter`), `music.prepare()` (metadata only), `onDone`. The card's key follows the player: PLAY / PAUSE / RESUME TRACK.
 
 ### Shared with Sofi / reuse
 
@@ -128,6 +130,15 @@ Source art and audio live untracked in `luis/` at the repo root; keep originals 
 ### Verifying
 
 `npm run build`, `npx vite preview`, set `localStorage['vampireos:screen'] = 'debug'` and open `/`, tap `from_luis.mp3` at 390 px. Check: four log lines, blackout with the flat line and a twitch on the thump, slam on the riff's entry, three strikes (entry, +2.4 s, +4.7 s), neutral face as the riff ends, **no bolts/notes/waves while he talks**, four lines verbatim with the mouth moving only on letters, the card at the end; back mid-riff stops the audio; reopening replays. Last automated run (headless Edge, instrumented `AudioBufferSourceNode.start`/`ended` and a MutationObserver): impact 336 ms after audible start (entry 275 ms + 40 ms latency), strikes at 0.00/2.38/4.70 s, settle at the exact `ended`, and during talking all effect layers `display: none`, 0 visible bolts, 0 notes, 0 effect animations.
+
+### Song and persistent player (`music.js`)
+
+- **API:** `music.prepare / play / pause / toggle / seek / hold(reason) / release(reason) / subscribe(fn) / restore / dispose`. `play()` must run inside a gesture the first time; only the PLAY TRACK card (and the bar itself) call it.
+- **One element, app lifetime.** A single `<audio loop>` created on first use; screens never own it, so `app.go` and Debug Mode view changes don't touch it. `main.js` disposes it only on `?restart` / going back to `update`, and calls `restore()` after boot: if the song was ever started (`localStorage['vampireos:track']`), the bar returns paused after a reload.
+- **Holds:** `hold(reason)` pauses and remembers whether it was playing; when the last hold is released it resumes only if it was. A user play/pause in between wins. Luis's scene holds on mount (a replay's riff never plays over the song) and releases when the card appears or on dispose. **`emo_mode.mp4` should call `music.hold('emo')` on its `play` and `music.release('emo')` on `pause`/`ended`/close.**
+- **Bar:** fixed, 58 px, `z-index: 40` (under the CRT, over `.wipe`). `body.has-player` sets `--player-room`, which `.stage` adds to its bottom padding so content can always scroll clear of it. `.stage.is-typing ~ .mp` hides it while the editor has the keyboard. Skins follow `body[data-theme]`: BIOS (dark), default-looking HTML controls (naked), calm paper (light).
+- **Mute:** the speaker button toggles `audio.muted` on the song element only (Sofi, Luis's voice and riff are separate Web Audio graphs). Volume stays at a fixed 0.8; muting never pauses or seeks. Media Session metadata and play/pause/seek handlers are set for the lock screen.
+- **Seeking needs HTTP Range support** from the host (`vite preview` answers 206); without it Chromium can't seek.
 
 ### Known limitations
 
