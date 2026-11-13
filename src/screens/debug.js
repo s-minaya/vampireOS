@@ -1,5 +1,7 @@
 import { createScope, onAction, escapeHtml } from '../util.js';
 import { ORIGINAL_SOURCE, runChecks } from '../puzzle.js';
+import { mountOpening } from './opening.js';
+import { mountLuis, preloadLuis } from './luis.js';
 
 // Beat 3: debug mode, the fake filesystem, the typed code puzzle and the
 // empty gift folder that leads to the commit history.
@@ -21,6 +23,26 @@ const winBar = (title) => `<div class="win-bar"><div class="win-chip">${title}</
 
 const backButton = `<button class="back" data-act="files">${icons.back}<span>/vampireos</span></button>`;
 
+// Sofi's one-time welcome, shown before the explorer. Approved dialogue, kept verbatim.
+const INTRO_LINES = [
+  'Okay. Before you say anything: I know.',
+  'Apparently, "I only touched the backend a little" is not a valid technical explanation.',
+  'Welcome to Debug Mode!',
+  'These are the files I left behind while building your present. Some are important. Others... were never meant to be seen.',
+  'Have a look around, find what\'s broken, and fix it. Your birthday present is locked until the system works again.',
+  'And David?',
+  "Please don't open anything embarrassing.",
+];
+
+const introView = `
+  <div class="d-stack">
+    <div class="win">
+      ${winBar('DEBUG MODE')}
+      <div data-ref="intro"></div>
+    </div>
+  </div>
+`;
+
 const filesView = `
   <div class="d-stack">
     <div>
@@ -29,17 +51,9 @@ const filesView = `
     </div>
     <div class="win">
       ${winBar('/vampireos')}
-      <div class="row row--dim">
-        ${icons.file('#8f8175')}
-        <div class="row-text"><div class="row-name">frontend/absolutely_perfect.ts</div><div class="row-meta">0 bugs (self-reported)</div></div>
-      </div>
-      <div class="row row--dim">
-        ${icons.file('#8f8175')}
-        <div class="row-text"><div class="row-name">backend/what_is_rap.txt</div><div class="row-meta">0 bytes</div></div>
-      </div>
-      <button class="row row--open" data-act="code">
+      <button class="row row--open" data-act="luis">
         ${icons.file('#eadfcf')}
-        <span class="row-text"><span class="row-name">backend/please_work.js</span><span class="row-meta c-red">1 error</span></span>
+        <span class="row-text"><span class="row-name">from_luis.mp3</span><span class="row-meta c-dim">audio file</span></span>
         ${icons.next}
       </button>
       <button class="row row--open" data-act="arch">
@@ -47,12 +61,29 @@ const filesView = `
         <span class="row-text"><span class="row-name">ARCHITECTURE.txt</span><span class="row-meta c-dim">read-only</span></span>
         ${icons.next}
       </button>
+      <div class="row row--dim">
+        ${icons.file('#8f8175')}
+        <div class="row-text"><div class="row-name">backend/what_is_rap.txt</div><div class="row-meta">0 bytes</div></div>
+      </div>
+      <div class="row row--dim">
+        ${icons.folder}
+        <div class="row-text"><div class="row-name">DO_NOT_OPEN/</div><div class="row-meta">3 files</div></div>
+      </div>
+      <button class="row row--open" data-act="code">
+        ${icons.file('#eadfcf')}
+        <span class="row-text"><span class="row-name">backend/please_work.js</span><span class="row-meta c-red">1 error</span></span>
+        ${icons.next}
+      </button>
+      <div class="row row--dim">
+        ${icons.file('#8f8175')}
+        <div class="row-text"><div class="row-name">frontend/absolutely_perfect.ts</div><div class="row-meta">0 bugs (self-reported)</div></div>
+      </div>
       <div class="row row--dim row--last">
         ${icons.folder}
         <div class="row-text"><div class="row-name">gift/</div><div class="row-meta c-red">locked: BARBARIDAD_EXCEPTION</div></div>
         ${icons.lock}
       </div>
-      <div class="win-status"><span>5 items</span><span>debug mode</span></div>
+      <div class="win-status"><span>7 items</span><span>debug mode</span></div>
     </div>
     <div class="console">
       <div class="console-label">CONSOLE</div>
@@ -62,6 +93,14 @@ const filesView = `
         <div>DELETE /david/emo-phase → <span class="c-red">405 Method Not Allowed</span></div>
       </div>
     </div>
+  </div>
+`;
+
+// from_luis.mp3: Luis's entrance and note (luis.js), opened like any other file.
+const luisView = `
+  <div class="d-stack d-stack--tight enter">
+    ${backButton}
+    <div class="d-stack d-stack--tight" data-ref="luis"></div>
   </div>
 `;
 
@@ -194,14 +233,17 @@ function describeRun(result) {
 
 const outputHtml = (run) => `<div class="out-lines">${run.lines.join('')}</div><div class="voice out-verdict">${run.verdict}</div>`;
 
-export function mountDebug(root, app) {
+export function mountDebug(root, app, options = {}) {
   const scope = createScope();
-  const state = { view: 'files', patched: false, code: ORIGINAL_SOURCE, output: idleOutput, locked: false };
+  let scene = null; // Sofi's intro or Luis's file: disposed when the view changes
+  const state = { view: options.intro ? 'intro' : 'files', patched: false, code: ORIGINAL_SOURCE, output: idleOutput, locked: false };
   const ref = (name) => root.querySelector(`[data-ref="${name}"]`);
 
   function render() {
     const views = {
+      intro: introView,
       files: filesView,
+      luis: luisView,
       arch: archView,
       code: codeView(state.output),
       fixed: fixedView,
@@ -209,9 +251,17 @@ export function mountDebug(root, app) {
     };
     root.innerHTML = `${strip(state.patched)}<div class="d-content">${views[state.view]}</div>`;
     if (state.view === 'code') ref('input').value = state.code;
+    if (state.view === 'intro') {
+      scene = mountOpening(ref('intro'), { scope, lines: INTRO_LINES, awake: true, onDone: () => show('files') });
+    }
+    if (state.view === 'luis') scene = mountLuis(ref('luis'), { scope });
   }
 
   function show(view) {
+    if (scene) {
+      scene.dispose();
+      scene = null;
+    }
     state.view = view;
     render();
     window.scrollTo(0, 0);
@@ -244,6 +294,7 @@ export function mountDebug(root, app) {
 
   const off = onAction(root, {
     files: () => show('files'),
+    luis: () => show('luis'),
     arch: () => show('arch'),
     code: () => show('code'),
     gift: () => show('gift'),
@@ -278,6 +329,7 @@ export function mountDebug(root, app) {
   root.addEventListener('focusout', onBlur);
 
   render();
+  preloadLuis(); // so from_luis.mp3 opens without a wait
 
   return () => {
     off();
@@ -285,6 +337,7 @@ export function mountDebug(root, app) {
     root.removeEventListener('focusin', onFocus);
     root.removeEventListener('focusout', onBlur);
     root.classList.remove('is-typing');
+    if (scene) scene.dispose();
     scope.dispose();
   };
 }

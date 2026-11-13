@@ -279,7 +279,7 @@ export function mountUpdate(root, app) {
     },
     dismiss: removeRefusal,
     restart: () => install(true),
-    debug: () => app.go('debug'),
+    debug: () => app.go('debug', { intro: true }),
   });
 
   showPrompt(true);

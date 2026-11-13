@@ -50,14 +50,14 @@ function recall() {
 }
 
 const app = {
-  go(name) {
+  go(name, options) {
     if (dispose) dispose();
     stage.innerHTML = '';
     stage.className = `stage stage--${name}`;
     app.theme(SCREENS[name].theme);
     remember(name);
     window.scrollTo(0, 0);
-    dispose = SCREENS[name].mount(stage, app) || null;
+    dispose = SCREENS[name].mount(stage, app, options) || null;
   },
   theme(theme) {
     document.body.dataset.theme = theme;

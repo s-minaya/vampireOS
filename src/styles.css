@@ -475,7 +475,7 @@ body:not([data-theme='dark']) .crt { opacity: 0; }
   position: relative;
   align-self: start;
   box-sizing: border-box;
-  border: 2px solid var(--pink);
+  border: 2px solid var(--bubble, var(--pink));
   background: var(--coffin);
   box-shadow: 4px 4px 0 var(--dried);
   padding: 8px 12px 12px;
@@ -491,12 +491,12 @@ body:not([data-theme='dark']) .crt { opacity: 0; }
   height: 14px;
   margin-left: -7px;
   box-sizing: border-box;
-  border-left: 2px solid var(--pink);
-  border-top: 2px solid var(--pink);
+  border-left: 2px solid var(--bubble, var(--pink));
+  border-top: 2px solid var(--bubble, var(--pink));
   background: var(--coffin);
   transform: rotate(45deg);
 }
-.op-name { font-family: var(--f-mono); font-size: 15px; line-height: 16px; letter-spacing: 0.2em; color: var(--pink); }
+.op-name { font-family: var(--f-mono); font-size: 15px; line-height: 16px; letter-spacing: 0.2em; color: var(--bubble, var(--pink)); }
 .op-type { display: grid; font-family: var(--f-mono); font-size: 22px; line-height: 24px; color: var(--bone); }
 .op-type > * { grid-area: 1 / 1; }
 .op-ghost { visibility: hidden; }
@@ -506,7 +506,7 @@ body:not([data-theme='dark']) .crt { opacity: 0; }
   height: 17px;
   margin-left: 2px;
   vertical-align: -2px;
-  background: var(--pink);
+  background: var(--bubble, var(--pink));
   animation: vos-blink 0.7s steps(1, end) infinite;
 }
 .op-next {
@@ -515,7 +515,7 @@ body:not([data-theme='dark']) .crt { opacity: 0; }
   bottom: 8px;
   width: 12px;
   height: 7px;
-  background: var(--pink);
+  background: var(--bubble, var(--pink));
   clip-path: polygon(0 0, 100% 0, 50% 100%);
   visibility: hidden;
 }
@@ -535,7 +535,7 @@ body:not([data-theme='dark']) .crt { opacity: 0; }
 .op.is-compact :is(.op-ground, .op-wait, .op-ghost) { display: none; }
 .op.is-compact .op-text { flex: 1; min-width: 0; margin: 0 0 10px; }
 .op.is-compact .op-type { font-size: 20px; line-height: 22px; }
-.op.is-compact .op-tail { left: -8px; top: auto; bottom: 16px; margin: 0; border-top: 0; border-bottom: 2px solid var(--pink); }
+.op.is-compact .op-tail { left: -8px; top: auto; bottom: 16px; margin: 0; border-top: 0; border-bottom: 2px solid var(--bubble, var(--pink)); }
 
 @keyframes op-tick { 50% { transform: translateY(2px); } }
 
@@ -817,6 +817,175 @@ body:not([data-theme='dark']) .crt { opacity: 0; }
 .void { position: relative; height: 400px; background: repeating-conic-gradient(#150a0d 0% 25%, #0a0506 0% 50%) 0 0 / 4px 4px; }
 .cobweb { position: absolute; right: 0; top: 0; }
 .void-cursor { position: absolute; left: 14px; top: 14px; }
+
+/* ── 3b · from_luis.mp3: Luis's entrance ─────────────────────────────────
+   The stage runs through data-phase: setup (log) → dark (lights out, a flat line) →
+   riff (he slams in; bolts, notes and waves fire from luis.js) → calm (effects fade,
+   neutral face) → talking (every entrance layer is gone; the bubble). Effect animations
+   have no fill mode on purpose: their base state is invisible, so a finished or cancelled
+   animation can never leave anything on screen. His neon is the purple of his notes. */
+
+.lz-win { --neon: #d65cff; --bubble: var(--neon); }
+.lz-body {
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+.lz-stage { position: relative; height: 270px; background: var(--crypt); transition: background-color 0.3s steps(3, end); }
+.lz-stage:not([data-phase='setup']) { background: #000; }
+.lz-stage:is([data-phase='calm'], [data-phase='talking']) { box-shadow: inset 0 -2px 0 var(--bone); }
+.lz-stage[data-phase='calm'] :is(.lz-bolts, .lz-notes, .lz-flash) { opacity: 0; transition: opacity 0.35s ease; }
+.lz-stage[data-phase='talking'] :is(.lz-bolts, .lz-notes, .lz-flash, .lz-waves, .lz-line) { display: none; }
+
+.lz-log { position: absolute; left: 18px; right: 18px; top: 16px; z-index: 7; color: var(--dim); transition: opacity 0.25s steps(2, end); }
+.lz-stage:not([data-phase='setup']) .lz-log { opacity: 0; }
+
+.lz-glow {
+  position: absolute;
+  inset: -40px -20px -10px;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse 60% 55% at 50% 48%, rgba(170, 60, 230, 0.55), rgba(170, 60, 230, 0) 70%);
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+.lz-stage[data-phase='dark'] .lz-glow { opacity: 0.32; animation: lz-hum 1.4s ease-in-out infinite alternate; }
+.lz-stage[data-phase='riff'] .lz-glow { opacity: 0.55; }
+.lz-stage:is([data-phase='calm'], [data-phase='talking']) .lz-glow { opacity: 0.22; }
+.lz-glow.is-pulse { animation: lz-glow-pulse 0.7s ease-out; }
+
+.lz-line {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  z-index: 1;
+  width: 0;
+  height: 2px;
+  background: var(--neon);
+  box-shadow: 0 0 8px var(--neon);
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: width 0.5s steps(6, end), opacity 0.15s;
+}
+.lz-stage[data-phase='dark'] .lz-line { width: 70%; opacity: 1; animation: lz-line-pulse 1.4s ease-in-out infinite alternate; }
+.lz-stage[data-phase='dark'] .lz-line.is-thump { animation: lz-thump 0.26s ease-out; } /* the pickup thump, heard in the dark */
+
+.lz-waves { position: absolute; left: -9%; right: -9%; top: 46%; z-index: 2; transform: translateY(-50%); visibility: hidden; pointer-events: none; }
+.lz-waves img { display: block; width: 100%; height: auto; }
+.lz-waves-pulse, .lz-waves img { transform-origin: 50% 50%; }
+.lz-stage:is([data-phase='riff'], [data-phase='calm']) .lz-waves { visibility: visible; }
+.lz-stage[data-phase='riff'] .lz-waves { animation: lz-waves-in 0.28s cubic-bezier(0.2, 1.7, 0.4, 1) both; }
+.lz-stage[data-phase='riff'] .lz-waves img { animation: lz-waves-idle 0.5s ease-in-out infinite alternate; }
+.lz-waves-pulse.is-pulse { animation: lz-waves-pulse 0.24s ease-out; }
+.lz-stage[data-phase='calm'] .lz-waves { animation: lz-waves-out 0.55s ease-in both; }
+
+.lz-luis {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  z-index: 3;
+  width: 256px;
+  margin-left: -128px;
+  transform-origin: 50% 100%;
+  opacity: 0;
+  transform: translateY(70px) scale(0.3);
+}
+.lz-stage:is([data-phase='riff'], [data-phase='calm'], [data-phase='talking']) .lz-luis { opacity: 1; transform: none; }
+.lz-stage[data-phase='riff'] .lz-luis { animation: lz-slam 0.42s linear both; }
+.lz-bob, .lz-tremble { transform-origin: 50% 100%; }
+.lz-bob.is-bob { animation: lz-bob 0.2s ease-out; }
+.lz-bob.is-slam { animation: lz-slam-bob 0.34s ease-out; }
+.lz-stage[data-phase='calm'] .lz-bob { animation: lz-settle 0.6s ease-out both; }
+.lz-tremble { position: relative; aspect-ratio: 1; }
+.lz-stage[data-phase='riff'] .lz-tremble { animation: lz-tremble 0.08s steps(2, end) infinite; }
+.lz-stage:is([data-phase='calm'], [data-phase='talking']) .lz-tremble { animation: lz-breathe 3.6s ease-in-out 0.6s infinite; }
+.lz-frame { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+.lz-frame--crazy { transition: opacity 0.3s ease; }
+.lz-stage:is([data-phase='calm'], [data-phase='talking']) .lz-frame--crazy { opacity: 0; }
+/* The open mouth is a feathered crop of speech-02 laid over speech-01 (540,690 200x150 of 1254). */
+.lz-mouth { position: absolute; left: 43.062%; top: 55.024%; width: 15.949%; height: auto; visibility: hidden; }
+.lz-luis.is-speaking .lz-mouth { animation: lz-flap 0.5s step-end infinite; }
+
+.lz-bolts { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
+.lz-bolt { position: absolute; opacity: 0; filter: drop-shadow(0 0 6px rgba(255, 210, 60, 0.9)); }
+.lz-bolt--1l { left: -22px; top: -34px; height: 232px; transform: rotate(-12deg); }
+.lz-bolt--1r { right: -22px; top: -46px; height: 232px; transform: scaleX(-1) rotate(-9deg); }
+.lz-bolt--2 { right: 2px; top: -16px; height: 196px; }
+.lz-bolt--3 { left: 4px; top: 26px; height: 150px; }
+.lz-bolt--4 { left: -10px; bottom: 44px; width: 122px; }
+.lz-bolt.is-on { animation: lz-bolt 0.42s step-end var(--d, 0ms); }
+
+.lz-notes { position: absolute; inset: 0; z-index: 5; pointer-events: none; }
+.lz-note {
+  position: absolute;
+  left: var(--x);
+  top: 34%;
+  width: var(--w, 54px);
+  margin-left: calc(var(--w, 54px) / -2);
+  opacity: 0;
+  filter: drop-shadow(0 0 6px rgba(214, 92, 255, 0.8));
+  animation: lz-note 1.15s cubic-bezier(0.2, 0.6, 0.3, 1) both;
+}
+.lz-note--dim { filter: none; animation-duration: 1.4s; }
+
+.lz-flash {
+  position: absolute;
+  inset: -30px -20px -10px;
+  z-index: 6;
+  pointer-events: none;
+  opacity: 0;
+  mix-blend-mode: screen;
+  background: radial-gradient(ellipse 70% 70% at 50% 45%, #fff 0%, rgba(214, 92, 255, 0.9) 28%, rgba(214, 92, 255, 0) 72%);
+}
+.lz-flash.is-on { animation: lz-flash 0.3s steps(4, end); }
+
+.lz-text { display: none; padding: 14px 18px 18px; }
+.lz-body.is-talking .lz-text { display: grid; }
+.lz-text [hidden] { display: none !important; }
+
+@keyframes lz-hum { from { opacity: 0.22; } to { opacity: 0.4; } }
+@keyframes lz-line-pulse { from { opacity: 0.7; box-shadow: 0 0 6px var(--neon); } to { opacity: 1; box-shadow: 0 0 14px var(--neon); } }
+@keyframes lz-thump { from { transform: translateX(-50%) scaleY(5); box-shadow: 0 0 22px var(--neon); } to { transform: translateX(-50%) scaleY(1); box-shadow: 0 0 8px var(--neon); } }
+@keyframes lz-glow-pulse { from { opacity: 1; } to { opacity: 0.5; } }
+@keyframes lz-waves-in { from { transform: translateY(-50%) scaleY(0.04); } to { transform: translateY(-50%) scaleY(1); } }
+@keyframes lz-waves-idle { from { transform: scaleY(0.84); } to { transform: scaleY(1.08); } }
+@keyframes lz-waves-pulse { from { transform: scaleY(1.5); } to { transform: scaleY(1); } }
+@keyframes lz-waves-out { to { transform: translateY(-50%) scaleY(0.02); opacity: 0; } }
+@keyframes lz-slam {
+  0% { opacity: 0; transform: translateY(80px) scale(0.3); }
+  8% { opacity: 1; transform: translateY(60px) scale(0.45); }
+  34% { transform: translateY(-18px) scale(1.24); }
+  52% { transform: translateY(6px) scale(0.93); }
+  70% { transform: translateY(-4px) scale(1.05); }
+  86% { transform: translateY(1px) scale(0.985); }
+  100% { transform: none; }
+}
+@keyframes lz-bob { 0% { transform: translateY(6px) scale(1.06, 0.93); } 100% { transform: none; } }
+@keyframes lz-slam-bob {
+  0% { transform: translateY(10px) rotate(-6deg) scale(1.14, 0.88); }
+  55% { transform: translateY(-5px) rotate(2deg) scale(0.97, 1.05); }
+  100% { transform: none; }
+}
+@keyframes lz-tremble { 0% { transform: translate(1px, 0); } 100% { transform: translate(-1px, 1px); } }
+@keyframes lz-settle { 0% { transform: scale(1.05, 0.95); } 45% { transform: scale(0.985, 1.015); } 100% { transform: none; } }
+@keyframes lz-breathe { 0%, 100% { transform: none; } 50% { transform: translateY(-2px) scale(1, 1.01); } }
+@keyframes lz-flap {
+  0% { visibility: visible; }
+  18% { visibility: hidden; }
+  30% { visibility: visible; }
+  52% { visibility: hidden; }
+  64% { visibility: visible; }
+  84%, 100% { visibility: hidden; }
+}
+@keyframes lz-bolt { 0% { opacity: 1; } 24% { opacity: 0; } 38% { opacity: 1; } 60% { opacity: 0; } 72% { opacity: 0.9; } 100% { opacity: 0; } }
+@keyframes lz-note {
+  0% { opacity: 0; transform: translate(0, 10px) scale(0.4); }
+  12% { opacity: 1; transform: translate(calc(var(--dx) * 0.15), -14px) scale(1.08) rotate(calc(var(--rot) * 0.3)); }
+  70% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--dx), -165px) scale(0.85) rotate(var(--rot)); }
+}
+@keyframes lz-flash { from { opacity: 0.95; } to { opacity: 0; } }
 
 /* ── 3 · The Commit Crypt ──────────────────────────────────────────────── */
 
