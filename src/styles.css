@@ -319,8 +319,6 @@ body:not([data-theme='dark']) .crt { opacity: 0; }
 .u-prompt { padding: 18px 20px 12px; display: flex; flex-direction: column; }
 .u-headline { margin-top: 2px; font-family: var(--f-black); font-size: 72px; line-height: 70px; text-align: center; }
 .u-lede { margin-top: 12px; font-size: 19px; line-height: 26px; text-align: center; text-wrap: balance; }
-.u-accept { margin-top: 20px; }
-.u-refuse { margin-top: 10px; align-self: center; }
 
 .u-install {
   min-height: 356px;
@@ -407,6 +405,282 @@ body:not([data-theme='dark']) .crt { opacity: 0; }
 .alert-actions .key { font-size: 20px; }
 .alert-quote { display: block; padding: 24px 20px 22px; font-size: 23px; line-height: 31px; }
 .alert-drain { display: block; height: 4px; background: var(--arterial); transform-origin: left center; animation: vos-drain 2.6s linear both; }
+
+.u-guide { margin-top: 16px; }
+.u-choices { margin-top: 16px; display: flex; flex-direction: column; gap: 14px; }
+.u-choices .is-pending { visibility: hidden; }
+/* ACCEPT MY FATE is the most obvious option: the primary key, plus a faint double heartbeat. */
+.u-beckon { position: relative; }
+.u-beckon::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border: 2px dashed var(--pink);
+  opacity: 0;
+  pointer-events: none;
+  animation: u-beckon 2.8s steps(1, end) 1.2s infinite;
+}
+.u-refuse.is-revoked {
+  border-color: var(--wine);
+  background: var(--crypt);
+  box-shadow: 4px 4px 0 var(--dried);
+  color: var(--dim);
+  text-decoration: line-through;
+  animation: vos-shake 0.5s steps(8, end) both;
+}
+.u-revoked { font-size: 16px; line-height: 22px; text-align: center; color: var(--dim); text-wrap: balance; }
+@keyframes u-beckon {
+  0%, 74% { opacity: 0; }
+  76%, 80% { opacity: 1; }
+  82%, 84% { opacity: 0; }
+  86%, 90% { opacity: 1; }
+  92%, 100% { opacity: 0; }
+}
+
+/* Sofi asleep at her post, then talking: the window body before the choices */
+.op {
+  padding: 4px 18px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+.op [hidden] { display: none !important; }
+.op-sofi { display: block; width: 192px; }
+.op-sofi:disabled { cursor: default; }
+.op-sofi:focus-visible { outline: 2px solid var(--pink); outline-offset: 3px; }
+.op-ground { width: 100%; height: 2px; background: var(--bone); box-shadow: 0 3px 0 var(--dried); }
+.op-text { width: 100%; margin-top: 14px; display: grid; }
+.op-wait { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.op-status { font-family: var(--f-mono); font-size: 19px; line-height: 20px; letter-spacing: 0.08em; color: var(--dim); }
+.op-meter {
+  width: 174px;
+  box-sizing: border-box;
+  border: 2px solid var(--bone);
+  padding: 3px;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 3px;
+}
+.op-meter span { height: 12px; background: var(--velvet); }
+.op-meter span.is-on { background: var(--pink); }
+.op-meter.is-poked { animation: op-tick 0.16s steps(2, end); }
+.op-meter.is-full span { animation: vos-blink 0.3s steps(1, end) 3; }
+.op-hint { font-size: 18px; line-height: 24px; text-align: center; text-wrap: balance; }
+
+.op-bubble {
+  position: relative;
+  align-self: start;
+  box-sizing: border-box;
+  border: 2px solid var(--pink);
+  background: var(--coffin);
+  box-shadow: 4px 4px 0 var(--dried);
+  padding: 8px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.op-tail {
+  position: absolute;
+  left: 50%;
+  top: -8px;
+  width: 14px;
+  height: 14px;
+  margin-left: -7px;
+  box-sizing: border-box;
+  border-left: 2px solid var(--pink);
+  border-top: 2px solid var(--pink);
+  background: var(--coffin);
+  transform: rotate(45deg);
+}
+.op-name { font-family: var(--f-mono); font-size: 15px; line-height: 16px; letter-spacing: 0.2em; color: var(--pink); }
+.op-type { display: grid; font-family: var(--f-mono); font-size: 22px; line-height: 24px; color: var(--bone); }
+.op-type > * { grid-area: 1 / 1; }
+.op-ghost { visibility: hidden; }
+.op-caret {
+  display: inline-block;
+  width: 9px;
+  height: 17px;
+  margin-left: 2px;
+  vertical-align: -2px;
+  background: var(--pink);
+  animation: vos-blink 0.7s steps(1, end) infinite;
+}
+.op-next {
+  position: absolute;
+  right: 10px;
+  bottom: 8px;
+  width: 12px;
+  height: 7px;
+  background: var(--pink);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  visibility: hidden;
+}
+.op-next.is-on { visibility: visible; animation: vos-blink 0.9s steps(1, end) infinite; }
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Beside the choices she shrinks to a small guide, still blinking. */
+.op.is-compact { padding: 0; flex-direction: row; align-items: flex-end; gap: 12px; }
+.op.is-compact .op-sofi { flex: 0 0 96px; width: 96px; border-bottom: 2px solid var(--bone); }
+.op.is-compact :is(.op-ground, .op-wait, .op-ghost) { display: none; }
+.op.is-compact .op-text { flex: 1; min-width: 0; margin: 0 0 10px; }
+.op.is-compact .op-type { font-size: 20px; line-height: 22px; }
+.op.is-compact .op-tail { left: -8px; top: auto; bottom: 16px; margin: 0; border-top: 0; border-bottom: 2px solid var(--pink); }
+
+@keyframes op-tick { 50% { transform: translateY(2px); } }
+
+/* Sofi's sprite: 008-are-u-still-here poses over sofi-blink, and 004-talking.
+   Boxes are percentages of a 384px frame, compiled from the original SCSS. */
+.sofi-sprite {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+  transform-origin: 50% 100%;
+}
+.sofi-sprite [data-layer] { position: absolute; visibility: hidden; pointer-events: none; background-repeat: no-repeat; }
+.sofi-sprite [data-layer='body'] { inset: 0; visibility: visible; transform-origin: 50% 100%; }
+.sofi-sprite :is([data-layer='pose'], [data-layer='lids'], [data-layer='mouth']) { background-image: url('./assets/are-u-still-here.webp'); }
+.sofi-sprite :is([data-layer='z1'], [data-layer='z2'], [data-layer='z3'], [data-layer='burst']) { background-image: url('./assets/are-u-still-here-fx.webp'); }
+
+.sofi-sprite[data-sofi='nodding'] [data-layer='pose'] {
+  visibility: visible; left: 12.5%; top: 20.833%; width: 79.167%; aspect-ratio: 304 / 304;
+  background-size: 378.947% 100%; background-position: 0% 0%;
+}
+.sofi-sprite[data-sofi='asleep'] [data-layer='pose'] {
+  visibility: visible; left: 12.5%; top: 25%; width: 85.417%; aspect-ratio: 328 / 288;
+  background-size: 351.22% 105.556%; background-position: 36.893% 0%;
+}
+.sofi-sprite[data-sofi='startled'] [data-layer='pose'] {
+  visibility: visible; left: 8.333%; top: 20.833%; width: 89.583%; aspect-ratio: 344 / 304;
+  background-size: 334.884% 100%; background-position: 78.218% 0%;
+}
+/* Drowsy: sofi-blink's half-closed eyes, lowered lids and the 01 mouth. */
+.sofi-sprite[data-sofi='drowsy'] { background-image: url('./assets/sofi-blink.webp'); background-size: 300% 100%; background-position: 50% 0; }
+.sofi-sprite[data-sofi='drowsy'] [data-layer='lids'] {
+  visibility: visible; left: 29.167%; top: 45.833%; width: 45.833%; aspect-ratio: 176 / 40;
+  background-size: 654.545% 760%; background-position: 100% 0%;
+}
+.sofi-sprite[data-sofi='drowsy'][data-lids='heavier'] [data-layer='lids'] { background-position: 100% 15.152%; }
+.sofi-sprite[data-sofi='drowsy'] [data-layer='mouth'] {
+  visibility: visible; left: 45.833%; top: 60.417%; width: 10.417%; aspect-ratio: 40 / 24;
+  background-size: 2880% 1266.667%; background-position: 87.77% 28.571%;
+}
+.sofi-sprite [data-layer='z1'] { left: 66.667%; top: 14.583%; width: 10.417%; aspect-ratio: 40 / 48; background-size: 620% 200%; background-position: 0% 0%; }
+.sofi-sprite [data-layer='z2'] { left: 75%; top: 10.417%; width: 10.417%; aspect-ratio: 40 / 48; background-size: 620% 200%; background-position: 19.231% 0%; }
+.sofi-sprite [data-layer='z3'] { left: 81.25%; top: 2.083%; width: 16.667%; aspect-ratio: 1; background-size: 387.5% 150%; background-position: 43.478% 0%; }
+.sofi-sprite [data-layer='burst'] { left: 39.583%; top: 0; width: 27.083%; aspect-ratio: 104 / 96; background-size: 238.462% 100%; background-position: 100% 0%; transform-origin: 50% 90%; }
+.sofi-sprite :is([data-layer='z1'], [data-layer='z2'], [data-layer='z3']) { transform-origin: 0% 100%; }
+
+.sofi-sprite[data-sofi='asleep'] :is([data-layer='z1'], [data-layer='z2'], [data-layer='z3']) { visibility: visible; animation: sofi-zzz 3.6s ease-in-out infinite backwards; }
+.sofi-sprite[data-sofi='asleep'] [data-layer='z1'] { animation-delay: 0.6s; }
+.sofi-sprite[data-sofi='asleep'] [data-layer='z2'] { animation-delay: 1.1s; }
+.sofi-sprite[data-sofi='asleep'] [data-layer='z3'] { animation-delay: 1.6s; }
+.sofi-sprite[data-sofi='nodding'] [data-layer='body'] { animation: sofi-nod 0.36s ease-out; }
+.sofi-sprite[data-sofi='startled'] [data-layer='body'] { animation: sofi-jolt 0.5s ease-out; }
+.sofi-sprite[data-sofi='startled'] [data-layer='burst'] { visibility: visible; animation: sofi-burst 0.9s ease-out forwards; }
+.sofi-sprite.is-poked { animation: sofi-poke 0.22s steps(3, end); }
+
+/* Talking: eyes blink on their own loop; the mouth only moves while she speaks. */
+.sofi-sprite[data-sofi='talking'] {
+  background-image: url('./assets/talking.webp');
+  background-size: 300% 100%;
+  background-position: 0 0;
+  animation: sofi-talk-eyes 6.41s step-end infinite;
+}
+.sofi-sprite[data-sofi='talking'] [data-layer='talk'] {
+  visibility: visible; left: 45.833%; top: 58.333%; width: 12.5%; aspect-ratio: 48 / 40;
+  background-image: url('./assets/talking-mouth.webp'); background-size: 600% 100%; background-position: 0 0;
+}
+.sofi-sprite.is-speaking [data-layer='talk'] { animation: sofi-talk-mouth 6.41s step-end infinite; }
+
+/* 009-i-see-you, after her last line: sofi-blink's rest frame with a face on top (ceil rounding as in _i-see-you.scss). */
+.sofi-sprite:is([data-sofi='smirk'], [data-sofi='tease'], [data-sofi='giggle']) { background-image: url('./assets/sofi-blink.webp'); background-size: 300% 100%; background-position: 0 0; }
+.sofi-sprite :is([data-layer='face'], [data-layer='sparkle']) { background-image: url('./assets/i-see-you.webp'); }
+.sofi-sprite:is([data-sofi='smirk'], [data-sofi='tease']) [data-layer='face'] {
+  visibility: visible; left: 31.25%; top: 37.5%; width: 43.75%; aspect-ratio: 168 / 112;
+  background-size: 200% 400%; background-position: 100% 30.953%;
+}
+.sofi-sprite[data-sofi='tease'] [data-layer='face'] { background-position: 100% 64.286%; }
+.sofi-sprite[data-sofi='giggle'] [data-layer='face'] {
+  visibility: visible; left: 31.25%; top: 37.5%; width: 43.75%; aspect-ratio: 168 / 120;
+  background-size: 200% 373.334%; background-position: 100% 100%;
+}
+.sofi-sprite [data-layer='sparkle'] {
+  left: 79.167%; top: 25%; width: 14.584%; aspect-ratio: 1;
+  background-size: 600% 800%; background-position: 34.286% 87.756%; transform-origin: 42% 49%;
+}
+.sofi-sprite[data-sofi='tease'] [data-layer='sparkle'] { visibility: visible; animation: sofi-sparkle-in 1.3s ease-out forwards; }
+.sofi-sprite[data-sofi='giggle'] [data-layer='sparkle'] { visibility: visible; animation: sofi-sparkle-out 1.2s ease-in forwards; }
+.sofi-sprite[data-sofi='giggle'] { animation: sofi-giggle 1.2s ease-in-out; }
+
+@keyframes sofi-sparkle-in {
+  0%, 18% { opacity: 0; transform: scale(0); }
+  30% { opacity: 1; transform: scale(1.25); }
+  40% { transform: scale(0.9); }
+  50%, 70% { transform: none; }
+  80% { transform: scale(0.8); }
+  90%, 100% { opacity: 1; transform: none; }
+}
+@keyframes sofi-sparkle-out {
+  0% { transform: none; }
+  25% { transform: scale(0.8); }
+  40%, 70% { opacity: 1; transform: none; }
+  82% { transform: scale(1.15); }
+  100% { opacity: 0; transform: scale(0); }
+}
+/* Giggle: three little hops, each smaller. */
+@keyframes sofi-giggle {
+  0%, 30%, 60%, 90%, 100% { transform: none; }
+  10%, 40% { transform: scale(1.012, 0.982); }
+  20%, 50% { transform: scale(0.994, 1.012); }
+  70% { transform: scale(1.008, 0.988); }
+  80% { transform: scale(0.996, 1.008); }
+}
+@keyframes sofi-poke { 0% { transform: scale(1.04, 0.94); } 50% { transform: scale(0.98, 1.03); } 100% { transform: none; } }
+@keyframes sofi-nod { 0% { transform: scale(1, 1.035); } 45% { transform: scale(1.01, 0.975); } 100% { transform: none; } }
+@keyframes sofi-zzz {
+  0% { opacity: 0; transform: translate(-12%, 14%) scale(0.6); }
+  10% { opacity: 1; transform: scale(1.06); }
+  16% { transform: none; }
+  40% { transform: translateY(-7%); }
+  62% { opacity: 1; transform: none; }
+  80%, 100% { opacity: 0; transform: translate(8%, -18%); }
+}
+@keyframes sofi-jolt {
+  0% { transform: scale(1.02, 0.95); }
+  16% { transform: scale(0.97, 1.06); }
+  32% { transform: scale(1.01, 0.98); }
+  48% { transform: none; }
+  58% { transform: translateX(-1.2%); }
+  68% { transform: translateX(1.2%); }
+  78% { transform: translateX(-0.6%); }
+  88% { transform: translateX(0.3%); }
+  100% { transform: none; }
+}
+@keyframes sofi-burst {
+  0% { opacity: 0; transform: scale(0.4); }
+  20% { opacity: 1; transform: scale(1.18); }
+  34% { transform: scale(0.96); }
+  46% { transform: none; }
+  80% { opacity: 1; }
+  100% { opacity: 0; transform: scale(1.06); }
+}
+/* 004-talking timelines (6.41 s), generated from _talking.scss */
+@keyframes sofi-talk-eyes { 0%{background-position-x:0%} 13.105%{background-position-x:50%} 14.665%{background-position-x:100%} 16.225%{background-position-x:50%} 17.785%{background-position-x:0%} 67.083%{background-position-x:50%} 68.643%{background-position-x:100%} 70.203%{background-position-x:50%} 71.763%{background-position-x:0%} 73.323%{background-position-x:50%} 74.883%{background-position-x:100%} 76.443%{background-position-x:50%} 78.003%{background-position-x:0%} 100%{background-position-x:0%} }
+@keyframes sofi-talk-mouth { 0%{background-position-x:0%} 1.248%{background-position-x:100%} 2.652%{background-position-x:60%} 5.148%{background-position-x:40%} 6.552%{background-position-x:0%} 7.644%{background-position-x:80%} 9.36%{background-position-x:40%} 12.168%{background-position-x:80%} 13.417%{background-position-x:0%} 17.473%{background-position-x:40%} 19.189%{background-position-x:20%} 20.593%{background-position-x:80%} 22.465%{background-position-x:0%} 23.401%{background-position-x:100%} 24.961%{background-position-x:40%} 26.989%{background-position-x:60%} 29.641%{background-position-x:40%} 30.889%{background-position-x:80%} 32.449%{background-position-x:20%} 33.853%{background-position-x:0%} 35.101%{background-position-x:100%} 36.973%{background-position-x:80%} 38.534%{background-position-x:40%} 40.874%{background-position-x:20%} 42.278%{background-position-x:0%} 48.83%{background-position-x:80%} 50.39%{background-position-x:40%} 52.262%{background-position-x:0%} 53.354%{background-position-x:20%} 54.758%{background-position-x:60%} 57.098%{background-position-x:20%} 58.346%{background-position-x:100%} 60.374%{background-position-x:80%} 62.09%{background-position-x:0%} 63.495%{background-position-x:40%} 65.991%{background-position-x:80%} 67.395%{background-position-x:0%} 72.075%{background-position-x:20%} 73.479%{background-position-x:100%} 75.195%{background-position-x:80%} 76.599%{background-position-x:0%} 77.691%{background-position-x:40%} 79.251%{background-position-x:60%} 82.059%{background-position-x:40%} 83.463%{background-position-x:20%} 84.711%{background-position-x:0%} 85.959%{background-position-x:40%} 87.832%{background-position-x:80%} 91.888%{background-position-x:0%} 100%{background-position-x:0%} }
 
 /* ── 2 · Debug mode ────────────────────────────────────────────────────── */
 
@@ -830,13 +1104,3 @@ body:not([data-theme='dark']) .crt { opacity: 0; }
   color: #4f4449;
 }
 .heart { align-self: center; flex: 0 0 24px; }
-
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.001s !important;
-    animation-delay: 0s !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.001s !important;
-  }
-  .sofi, .cursor, .glitch, .bar-seg.is-stuck { animation: none !important; }
-}

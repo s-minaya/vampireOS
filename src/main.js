@@ -7,6 +7,13 @@ import '@fontsource/newsreader/400.css';
 import '@fontsource/newsreader/400-italic.css';
 import './styles.css';
 
+import sofiBlink from './assets/sofi-blink.webp';
+import stillHere from './assets/are-u-still-here.webp';
+import stillHereFx from './assets/are-u-still-here-fx.webp';
+import talking from './assets/talking.webp';
+import talkingMouth from './assets/talking-mouth.webp';
+import iSeeYou from './assets/i-see-you.webp';
+
 import { mountUpdate } from './screens/update.js';
 import { mountDebug } from './screens/debug.js';
 import { mountCrypt } from './screens/crypt.js';
@@ -59,10 +66,35 @@ const app = {
 };
 
 // Warm up every typeface so the ending never flashes a fallback font.
-if (document.fonts && document.fonts.load) {
-  ['48px "Jacquard 24"', '19px "IM Fell English"', 'italic 19px "IM Fell English"', '20px "IM Fell English SC"', '19px "VT323"', '18px "Newsreader"', 'italic 29px "Newsreader"'].forEach(
-    (font) => document.fonts.load(font).catch(() => {}),
+// The first five are the opening's; the loader waits for them.
+const FONTS = ['48px "Jacquard 24"', '19px "IM Fell English"', 'italic 19px "IM Fell English"', '20px "IM Fell English SC"', '19px "VT323"', '18px "Newsreader"', 'italic 29px "Newsreader"'];
+const fontLoads = document.fonts && document.fonts.load ? FONTS.map((font) => document.fonts.load(font).catch(() => {})) : [];
+
+// Initial loader: decode the sprites needed to show and wake Sofi before the first screen.
+// Audio, photos and videos load later, on their own screens.
+const CRITICAL_SPRITES = [sofiBlink, stillHere, stillHereFx, talking, talkingMouth, iSeeYou];
+const decoded = []; // keeps the decoded images referenced
+
+function preload() {
+  const fill = document.querySelector('[data-loader-fill]');
+  const tasks = [
+    ...CRITICAL_SPRITES.map((src) => {
+      const img = new Image();
+      img.src = src;
+      decoded.push(img);
+      return img.decode().catch(() => {});
+    }),
+    ...fontLoads.slice(0, 5),
+  ];
+  let done = 0;
+  tasks.forEach((task) =>
+    task.then(() => {
+      done += 1;
+      if (fill) fill.style.width = `${Math.round((done / tasks.length) * 100)}%`;
+    }),
   );
+  // Never hang on a slow asset: after a few seconds, start anyway.
+  return Promise.race([Promise.all(tasks), new Promise((resolve) => setTimeout(resolve, 6000))]);
 }
 
 // Reloading resumes the current chapter. Add ?restart to the URL to start over.
@@ -71,4 +103,4 @@ if (params.has('restart')) {
   remember('update');
   window.history.replaceState(null, '', window.location.pathname);
 }
-app.go(recall());
+preload().then(() => app.go(recall()));

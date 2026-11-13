@@ -1,0 +1,76 @@
+@use 'utilities' as u;
+
+.speech {
+  display: grid;
+  gap: 1.125rem;
+}
+
+// Copia invisible que reserva el alto final: nada salta mientras Sofi escribe.
+.type {
+  display: grid;
+
+  > * {
+    grid-area: 1 / 1;
+  }
+}
+
+// Pie entre el texto y el contenido de debajo: mide lo que el pie del diálogo.
+.foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.25rem 1.25rem;
+  min-height: 2.75rem;
+  margin-top: 0.75rem;
+}
+
+// Contenido bajo el texto, dentro del bocadillo.
+.body {
+  margin-top: 0.75rem;
+}
+
+.ghost {
+  visibility: hidden;
+}
+
+// Pie mientras escribe: «Ver todo» y la acción final en la misma celda.
+.footSlot {
+  display: grid;
+  justify-items: end;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.footLayer {
+  display: flex;
+  flex-wrap: wrap;
+  grid-area: 1 / 1;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.25rem 1.25rem;
+}
+
+.caret {
+  display: inline-block;
+  width: 10px;
+  height: 0.9em;
+  margin-left: 0.1875rem;
+  vertical-align: -0.1em;
+  background: currentColor;
+  animation: blink var(--duration-caret) steps(1) infinite;
+
+  @include u.reduced-motion {
+    animation: none;
+  }
+}
+
+.srOnly {
+  @include u.visually-hidden;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}

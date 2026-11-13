@@ -1,4 +1,5 @@
 import { createScope, onAction } from '../util.js';
+import { mountOpening } from './opening.js';
 
 // Beats 1 and 2: the Mandatory Birthday Update and its failure at 99%.
 
@@ -35,13 +36,13 @@ const frame = `
   <div data-ref="overlay"></div>
 `;
 
-const setup = (animate) => `
+const setup = (animate, asleep = false) => `
   <div class="boot ${animate ? 'boot--animate' : ''}">
     <div class="boot-line" style="--i:0">&gt; Initializing birthday protocol...</div>
     <div class="boot-line" style="--i:1">&gt; ABAP runtime: <span class="c-bone">detected</span></div>
     <div class="boot-line" style="--i:2">&gt; Emotional availability: <span class="c-red">unknown</span></div>
     <div class="boot-line" style="--i:3">&gt; Romantic vampire mode: <span class="c-bone">enabled</span></div>
-    <div class="boot-line" style="--i:4">&gt; Frontend developer: <span class="c-pink">confused</span></div>
+    <div class="boot-line" style="--i:4">&gt; Frontend developer: <span class="c-pink" data-ref="dev">${asleep ? 'asleep' : 'confused'}</span></div>
   </div>
   <div class="win u-win ${animate ? 'u-win--late' : ''}">
     <div class="win-bar"><div class="win-chip win-chip--caps">SYSTEM UPDATE</div></div>
@@ -49,15 +50,25 @@ const setup = (animate) => `
   </div>
 `;
 
+// Revealed only once Sofi has finished reacting: first ACCEPT MY FATE, red and flashing
+// (the most obvious option), then a plain I REFUSE underneath.
 const promptBody = `
-  <div class="u-prompt">
+  <div class="u-prompt enter">
     <div class="overline">MANDATORY BIRTHDAY</div>
     <div class="u-headline">Update</div>
     <p class="voice u-lede">A birthday update has been prepared in your honour, David. Installation is mandatory; your consent is a formality.</p>
-    <button class="key key--primary key--lg u-accept" data-act="accept">ACCEPT MY FATE</button>
-    <button class="link-key u-refuse" data-act="refuse">I REFUSE</button>
+    <div class="u-guide" data-ref="guide"></div>
+    <div class="u-choices" data-ref="choices">
+      <button class="key key--primary key--lg u-accept u-beckon is-pending" data-act="accept">ACCEPT MY FATE</button>
+      <button class="key u-refuse is-pending" data-act="refuse">I REFUSE</button>
+    </div>
   </div>
 `;
+
+const CHOICE_DELAY = 450; // after the prompt slides in
+const REFUSE_DELAY = 900; // I REFUSE arrives after ACCEPT MY FATE
+
+const revokedNote = '<p class="voice u-revoked enter" role="status">The option to refuse has been removed for your convenience.</p>';
 
 const progressBar = (extraClass = '') => `
   <div class="bar ${extraClass}" data-ref="bar" role="progressbar" aria-label="Installation progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
@@ -92,9 +103,9 @@ const failedBlock = (retried) => `
   </div>
 `;
 
-// PENDING DECISION (VAMPIREOS.md): the exact confirmation wording and tap
-// sequence are not decided. This is the minimal approved behaviour: both
-// choices ask ARE YOU SURE?, and refusing always leads back to the prompt.
+// PENDING DECISION (VAMPIREOS.md): the exact ARE YOU SURE? microcopy. Approved flow:
+// YES on accept installs; YES on refuse discards the objection and removes I REFUSE;
+// NO returns to the choices.
 const sureAlert = `
   <div class="modal">
     <div class="alert pop" role="alertdialog" aria-label="Are you sure?">
@@ -123,7 +134,7 @@ const discardedAlert = `
 
 export function mountUpdate(root, app) {
   const scope = createScope();
-  const state = { intent: '', attempts: 0, dismissTimer: null, ticker: null };
+  const state = { intent: '', opener: null, opening: null, attempts: 0, dismissTimer: null, ticker: null };
   root.innerHTML = frame;
   const ref = (name) => root.querySelector(`[data-ref="${name}"]`);
 
@@ -139,24 +150,84 @@ export function mountUpdate(root, app) {
   }
 
   function showPrompt(animate) {
-    ref('main').innerHTML = setup(animate);
+    // Sofi first: asleep in the update window, where the choices will be.
+    ref('main').innerHTML = setup(animate, true);
+    state.opening = mountOpening(ref('body'), {
+      scope,
+      onWake: () => {
+        const dev = ref('dev');
+        if (!dev) return;
+        dev.textContent = 'confused';
+        dev.classList.add('glitch');
+        scope.after(1300, () => dev.classList.remove('glitch'));
+      },
+      onDone: revealChoices,
+    });
+  }
+
+  // After her last line, the window shows the update prompt; she stays, smaller, beside the choices.
+  function revealChoices(guide) {
     ref('body').innerHTML = promptBody;
+    guide.classList.add('is-compact');
+    ref('guide').append(guide);
+    const choices = ref('choices');
+    choices.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    const [accept, refuse] = choices.querySelectorAll('button');
+    scope.after(CHOICE_DELAY, () => {
+      accept.classList.replace('is-pending', 'pop');
+      accept.focus({ preventScroll: true });
+    });
+    scope.after(CHOICE_DELAY + REFUSE_DELAY, () => refuse.classList.replace('is-pending', 'enter'));
   }
 
   function closeOverlay() {
     if (state.dismissTimer) scope.stop(state.dismissTimer);
     state.dismissTimer = null;
     ref('overlay').innerHTML = '';
+    document.removeEventListener('keydown', onEscape);
   }
 
-  function openSure(intent) {
+  function onEscape(event) {
+    if (event.key !== 'Escape') return;
+    if (state.intent === 'discarded') removeRefusal();
+    else cancelSure();
+  }
+
+  function openSure(intent, opener) {
     state.intent = intent;
+    state.opener = opener;
     ref('overlay').innerHTML = sureAlert;
     ref('overlay').querySelector('button').focus({ preventScroll: true });
+    document.addEventListener('keydown', onEscape);
+  }
+
+  function cancelSure() {
+    closeOverlay();
+    state.opener?.focus({ preventScroll: true });
+  }
+
+  // The objection is discarded, then so is the option itself: only acceptance remains.
+  function removeRefusal() {
+    closeOverlay();
+    state.intent = '';
+    const refuse = root.querySelector('[data-act="refuse"]');
+    const accept = root.querySelector('[data-act="accept"]');
+    if (!refuse || !accept) return;
+    refuse.disabled = true;
+    refuse.classList.add('is-revoked');
+    scope.after(650, () => {
+      refuse.remove();
+      accept.insertAdjacentHTML('afterend', revokedNote);
+      accept.focus({ preventScroll: true });
+    });
   }
 
   function install(fast) {
     closeOverlay();
+    if (state.opening) {
+      state.opening.dispose();
+      state.opening = null;
+    }
     if (state.ticker) scope.stop(state.ticker);
     ref('mark').classList.remove('glitch');
     ref('arch').classList.remove('arch--cracked');
@@ -193,18 +264,20 @@ export function mountUpdate(root, app) {
   }
 
   const off = onAction(root, {
-    accept: () => openSure('accept'),
-    refuse: () => openSure('refuse'),
-    no: closeOverlay,
+    accept: (el) => openSure('accept', el),
+    refuse: (el) => openSure('refuse', el),
+    no: cancelSure,
     yes: () => {
       if (state.intent === 'accept') {
         install(false);
         return;
       }
+      state.intent = 'discarded';
       ref('overlay').innerHTML = discardedAlert;
-      state.dismissTimer = scope.after(2600, closeOverlay);
+      ref('overlay').querySelector('button').focus({ preventScroll: true });
+      state.dismissTimer = scope.after(2600, removeRefusal);
     },
-    dismiss: closeOverlay,
+    dismiss: removeRefusal,
     restart: () => install(true),
     debug: () => app.go('debug'),
   });
@@ -213,6 +286,8 @@ export function mountUpdate(root, app) {
 
   return () => {
     off();
+    document.removeEventListener('keydown', onEscape);
+    if (state.opening) state.opening.dispose();
     scope.dispose();
   };
 }

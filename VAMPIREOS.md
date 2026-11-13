@@ -1,6 +1,6 @@
 # VampireOS — Project brief
 
-**Status:** Narrative, visual direction and prototype approved; implementation authorized on November 12, 2026. Remaining open items are listed under *Pending decisions*.
+**Status:** Narrative and Blackletter BIOS prototype approved; the guide characters, personal media and four-stage rollback refinements are also agreed. Implementation was authorized on November 12, 2026; integrate the refinements in small, reviewed passes. Remaining content decisions are listed below.
 **Deadline:** November 15, 2026 (David's birthday).
 
 ## Purpose
@@ -18,44 +18,89 @@ Sofi, a frontend developer who often jokes that she understands none of David's 
   - Oxblood-black ground, bone text, one arterial red; hard pixel borders, pinstripe title bars, dither and scanlines.
   - One typeface per voice: pixel blackletter (Jacquard 24) for VampireOS's pomp, IM Fell English for its aristocratic speech, VT323 for the machine, Newsreader only for the letter.
   - Pink (the sprite's sweater) marks Sofi's comments, commits and name.
-  - The rollback is a sunrise: black gothic, then grey unstyled HTML, then a white page.
+  - The rollback is a sunrise: black gothic, then **deliberately** grey unstyled HTML when the gothic theme is undone, then a white page. Make the loss of styling understandable as part of the story, not a broken build.
 - Stack: Vite with vanilla JavaScript and self-hosted fonts (chosen during implementation).
-- All visible UI/copy in **English**, except **BARBARIDAD**, David's habitual catchphrase, used as a recurring error term; `BARBARIDAD_EXCEPTION` is approved.
-- VampireOS speaks in a formal, dramatic, aristocratic voice. Sofi's overconfident, technically dubious voice is revealed through code comments, debug logs and hidden files.
-- Sofi does **not** appear as an on-screen support character during the game. Her existing sprite appears **only at the emotional ending**, beside the approved lead-in text.
+- **System UI, technical logs and errors remain in English**, except **BARBARIDAD**, David's habitual catchphrase; `BARBARIDAD_EXCEPTION` is approved. **Sofi's and Luis's spoken/written character dialogue should ultimately be in Spanish**, in their authentic voices. For now, the provisional English lines below are implementation placeholders to be rewritten/reviewed by Sofi; do not silently translate or finalize them. The previously approved English ending lead-in is likewise retained provisionally until Sofi adapts it.
+- VampireOS speaks in a formal, dramatic, aristocratic voice. Sofi is a chaotic, overconfident frontend developer who tries to guide David through her mistakes while blaming Luis when convenient; Luis is a musician, not a programmer.
+- **Sofi's existing sprite appears as a short, occasional on-screen guide**, starting **before David presses any opening button**, then at confusion points. She must not give away the puzzle solution or interrupt every screen. Her final appearance is quieter and emotionally distinct. **Luis appears alongside Sofi during the CSS rollback as a second dialogue participant**, with his visual asset/presentation to be confirmed; do not invent what he looks like.
 - The web is mobile-only, concise, single-user and primarily frontend/local-media driven. No genuine SAP integration, backend, account, payments or user-data collection.
 - Use parody dark patterns for comedy, with harmless and completable interactions. No frustrating dead ends.
 - Do not force all available media into the narrative. Prefer a few natural references over a collage.
+- **Animations always play.** Do not honour `prefers-reduced-motion`: phones in power-saving mode may report it, and every animation, effect and visual detail must still run. Keep keyboard/screen-reader support where it does not change the approved interactions.
 
 ## Approved narrative beats (order)
 
-1. **Mandatory Birthday Update:** David sees `ACCEPT MY FATE` and `I REFUSE`. `I REFUSE` exists only to exasperate him and must eventually **force him to tap `ACCEPT MY FATE`**. Both initial choices trigger an extra `ARE YOU SURE?` confirmation before installation. If David chooses `I REFUSE`, the flow must eventually return him to `ACCEPT MY FATE`—refusal cannot start installation on its own or offer a real escape. Exact confirmation wording and tap sequences remain undecided.
-2. **Failure:** the update reaches 99% and fails, showing `BARBARIDAD_EXCEPTION` and implying that Sofi touched the backend. Repeating/restarting does not fix the failure; David can enter debug mode.
-3. **Debug tools + trivial code puzzle:** David explores a fake filesystem, discovers Sofi's questionable comments, and fixes an absurdly simple `false` → `true` return in `please_work.js`. He reads a short function, edits the code himself with the mobile keyboard, and presses `RUN`, which runs two checks and shows debugging feedback. Nothing highlights the wrong value or reveals the fix. The typed code must never be executed as unrestricted JavaScript: it cannot freeze or compromise the page. There must be **only one** code puzzle, intentionally easy for him.
-4. **Exploration after the fix — The Commit Crypt:** After the `false` → `true` fix, David finds an **empty gift folder**, explores Sofi's commit history, and rolls back through earlier versions. The gothic interface progressively disappears until the original, perfectly working birthday message is revealed.
-   - **Backstory, discovered gradually through the commits:** Sofi first wrote a simple, working birthday message, then tried to build an elaborate operating system around it, broke everything, and eventually deleted the letter out of embarrassment. Git history preserved it. She did **not** build VampireOS to hide the letter.
-   - Do not reveal the deletion or its reason upfront; the empty folder must not explain itself.
-   - **Git as a premium birthday feature:** David has told Sofi that his workplace doesn't use version control. VampireOS proudly presents Git as a premium birthday feature, with Sofi's signed note (copy I) shown as text only, no sprite.
-   - **Commit history:** a few absurd commit messages reflecting Sofi's chaotic development process, without distracting from the narrative. Exact messages and the number of rollback states are implementation details.
-   - **Original commit:** reveals copy J. It is the only bug-free version, because Sofi originally just wanted to write David a birthday message.
-5. **Final scene — the recovered message:** the rollback ends at Sofi's original commit, which opens into her birthday message; the errors and manipulative UI have given way to it. The first appearance of Sofi's sprite accompanies the **approved English opening**:
+1. **Mandatory Birthday Update — Sofi's first appearance (approved opening):**
+   - A lightweight initial loader decodes only what is needed to show and wake Sofi (her sprites and the opening fonts); photos, audio and videos never block startup.
+   - Sofi starts **asleep** with animated Zzz inside the `SYSTEM UPDATE` window, before any button exists. She wakes after **6 taps within 4 seconds**; each tap gives progressive visual feedback. After **2 seconds without a tap** she gradually falls asleep again and progress resets. Reuse the original 008-are-u-still-here poses/effects, adapted to this logic. **Tapping Sofi is the only way to wake her**: no alternative wake-up controls.
+   - On success she plays the **startled** animation, then switches to **004-talking** and speaks the approved dialogue below in a mobile-friendly speech bubble with a typewriter effect, **synchronised with her talking animation and original talking sound**, including pauses between phrases; both stop when she finishes. The voice must sound fluid: no abrupt, frequent cuts or overlapping playback.
+   - Immediately after her last line, she reacts with the original **009-i-see-you** expressions: **smirk → tease → giggle → smirk**. The reaction finishes before any button appears.
+   - Only then are the choices revealed: first **`ACCEPT MY FATE`, red, with animated flashing lines** (the most obvious option), then **`I REFUSE` underneath, as a plain secondary key**. Sofi never tells David explicitly which button to press.
+   - Both choices open `ARE YOU SURE?`. Cancelling returns to the available choices. Confirming refusal shows copy A, then **removes `I REFUSE`**, forcing acceptance. Confirming acceptance starts the existing update. Exact `ARE YOU SURE?` microcopy remains to be chosen.
+2. **Failure — the confession:** The update reaches 99% and fails with `BARBARIDAD_EXCEPTION`, implying Sofi touched the backend. Restarting does not fix it. Sofi briefly admits she acted with misplaced confidence and points David toward Debug Mode, without solving anything.
+3. **Debug Mode — personal files, Luis's song, then one code puzzle:** A fake file explorer includes these *approved* discoveries; keep navigation simple, with no additional puzzles:
+   - **`from_luis.mp3` (early and prominent):** Luis's song appears near the start of Debug Mode with his brief note. David explicitly chooses `PLAY`; **no autoplay**. A small persistent play/pause control lets the track **continue through subsequent screens, including rollbacks and the letter**. The audio file and title are still to be supplied; use a marked placeholder meanwhile. If the fringe video plays, pause the song and restore its previous playing state afterwards (without unexpected overlapping audio).
+   - **`identity.service`:** A **pixel-art Cloud Strife GIF**, *not the meme image*, accompanies a playful `CLOUD STRIFE (97%)` identity match and the **five Cloud traits** originally supplied as a reference: `quiet, brooding, secretly emotional`; `big “I'll handle it alone” energy`; `loyal once you break through`; `struggles with identity but keeps fighting`; `accidentally cool without trying`. Obtain/confirm a suitable GIF before adding it; the original meme is copy reference only.
+   - **`facial_recognition.log`:** Show **one** of David's silly photos as an obviously unreliable facial-recognition result. Select from the real repository assets; do not turn it into a gallery.
+   - **`emo_mode.mp4`:** Optional-to-open discovery presenting David's fringe video as an `UNAUTHORIZED HAIR ANIMATION`/visual anomaly. It is an approved part of Debug Mode, not a required step to unlock the gift.
+   - **`ARCHITECTURE.txt` and `backend/please_work.js`:** Retain the approved absurd system-architecture copy and the **only** code puzzle. David reads the short `canOpenGift(date)` function, **types the fix** using the mobile keyboard and taps `RUN`. The two checks verify `14.11 → false` and `15.11 → true`; do not highlight the incorrect `false` or reveal the answer. Do not execute unrestricted user-entered JavaScript.
+   Sofi may briefly welcome him to Debug Mode or point at the relevant *folder*, but she must not narrate every file or solve the puzzle for him.
+4. **Missing gift → The Commit Crypt:** Once the puzzle is fixed, `/vampireos/gift` opens to an **empty folder**. **Remove the blinking cursor/false editable affordance.** Show an unobtrusive `0 files found` / previous versions clue and make `VERSION HISTORY` the natural next action. Sofi briefly explains that the gift should be there and that Git can recover older versions, without revealing the content of the lost file or why it disappeared.
+   - **Git as premium:** David told Sofi that his workplace does not use version control. VampireOS proudly offers Git as a premium birthday feature; preserve approved signed note **I** (provisional English for future Spanish dialogue). Show a short, clear explanation that `ROLL BACK` moves to an earlier version and **does not start another puzzle**.
+   - **Exactly four meaningful rollback interactions**, each with a visible narrative consequence, rather than six repetitive taps:
+     1. **Undo David's fix:** `BARBARIDAD_EXCEPTION` returns, **because he is viewing the past**. Say so explicitly; he must not solve the code again.
+     2. **Recover evidence of the deleted letter:** `birthday_letter.txt` returns to the historical working tree, but this broken version still cannot open it. Discover Sofi's embarrassment **gradually**, never explain it when the folder first appears.
+     3. **Undo `add vampires`:** The gothic look/CSS deliberately vanishes. Explain it in-universe (`GOTHIC THEME REMOVED` / `gothic.css no longer exists`); **Sofi and Luis appear together and argue in the now-unstyled interface**. Sofi says `Luis broke the CSS.` Luis replies `I don't even know what CSS is. I made you a song.` This refers back to the song he already shared in Debug Mode, **not** a second song reveal. Keep their appearance brief and dialogue-first. The track can continue playing.
+     4. **Return to the original commit:** Strip away the last unnecessary OS layer and reveal the original, **only bug-free** birthday letter and approved **INITIAL COMMIT** copy J. The player can now open the letter.
+   - **Backstory:** Sofi first wrote a simple, working birthday message, then built an extravagant OS around it, broke things, and ultimately deleted the letter out of embarrassment. Git history preserved it; **she did not build VampireOS to hide the letter**. Use a few chaotic commit labels within these four narrative states; maintain a logical progression. The grey unstyled screen is an intentional rewind, not a rendering failure.
+5. **Final scene — the recovered message:** After the original commit, the errors, manipulative UI and sarcastic guidance stop. Sofi's sprite appears in a **calmer, more prominent** presentation alongside the existing **provisional English opening**, to be adapted into Spanish by Sofi:
 
    > Okay, I might not understand what you do for a living. Or how your backend works. Or what RAP actually means.  
    > But there's one thing I'm absolutely sure of.
 
-   The final message is being prepared by Sofi; use a placeholder until she supplies it. A real photo of David, Sofi and her partner is planned for the ending. The emotional reveal should feel like the **one part of VampireOS that works perfectly**; do not bury it under further glitches or jokes.
+   Sofi's final personal message is not yet provided; **keep a clear placeholder**. A real photo of David, Sofi and Luis is planned; keep a placeholder until chosen. This scene is the **one part of VampireOS that works perfectly**: no new glitches, no joke that overshadows the sentiment. Luis's music remains available if David pressed play.
 
-## Optional media (not approved for inclusion)
+## Assets and media — approved vs pending
 
-- A meme in which Sofi compares David to Cloud Strife: possible mistaken-identity bug.
-- Funny photos of David: possible facial-recognition bug.
-- Video of David's emo fringe: possible appearance/configuration bug.
-- Photos of their teenage emo years; game-character screenshots: no coherent use approved; exclude unless a genuinely good idea emerges.
-- Existing Sofi spritesheets: inspect the real assets before choosing animations or integration. Repo at: "C:\Users\tiaso\OneDrive\Escritorio\Proyectos\Ask Sofi\spritesheets\spritesheet"
+**Approved for inclusion, with original files still to be checked/selected where noted:**
+
+- **Sofi's existing sprite:** guiding role in a few key scenes, plus a distinct final presentation. Reuse the actual current asset/frames only after inspection. Original spritesheet source: `C:\Users\tiaso\OneDrive\Escritorio\Proyectos\Ask Sofi\spritesheets\spritesheet`.
+- **Luis's song:** early in Debug Mode, user-initiated playback and a persistent player for the rest of the experience. **Audio file, title and final brief note pending.** Do not assume the file is already in the repo.
+- **Luis's visual appearance:** participates next to Sofi when CSS disappears. **Asset/representation pending**; use a clearly marked stand-in rather than inventing an appearance.
+- **Cloud pixel-art GIF:** replaces display of the original meme. The meme is **reference material for the five traits**, not the asset to show. Select/confirm a fitting GIF and check usage permissions before public release.
+- **One funny photo of David:** `facial_recognition.log`; choose from available photos without changing them into inaccurate representations.
+- **Existing fringe video:** `emo_mode.mp4`, opened optionally from Debug Mode.
+- **One real photo of David, Sofi and Luis:** final letter, file still to be selected/provided.
+
+**Not included without new approval:** teenage emo photo gallery, general game-character screenshots, additional galleries, more media puzzles.
+
+## Provisional character dialogue (English draft — later adapt to Spanish)
+
+These lines establish **meaning and timing**, not final voice. **Only system/UI copy stays English.** Sofi will adapt both characters' dialogue and the letter lead-in into their natural Spanish before delivery. Do not over-explain or repeat every line in full on every appearance.
+
+- **Sofi, opening (approved; provisional English until localised), one bubble per paragraph:**
+
+  > Oh! David! You scared me!
+  >
+  > Right. Your birthday. I knew I was forgetting something.
+  >
+  > I made you a present. An entire operating system, actually.
+  >
+  > Now, a tiny warning: I designed the interface myself, and it may not have your best interests at heart.
+  >
+  > So... maybe don't trust the most obvious option.
+- **Sofi, after the 99% crash:** `Right. So. I may have touched the backend. In my defense, I was feeling confident for absolutely no reason. You should probably open Debug Mode.`
+- **Luis's note accompanying his song in Debug Mode:** `I have absolutely no idea how any of this works. So I did the one thing I actually know how to do. I made you a song. Hope you like it, mate.`
+- **Sofi, if guidance is needed near the puzzle:** `The birthday logic is... not ideal. Can you fix it?` (No solution or line-number hint.)
+- **Sofi, at the empty gift folder:** `This is awkward. Your gift should be here. It isn't. Good news: I included Git as a premium birthday feature. Try Version History. We might be able to recover something.`
+- **Sofi, first rollback hint:** `Each rollback takes us back through one of my decisions. Please try not to judge me by the commit messages.`
+- **Sofi, when the old bug resurfaces:** `You're not breaking it again. You're looking at an older version.`
+- **CSS rollback dialogue — agreed English starting point:** `Sofi: "Luis broke the CSS."` / `Luis: "I don't even know what CSS is. I made you a song."` / optional Sofi: `...which is considerably more useful than whatever I was doing.`
+- **Ending:** Preserve the opening in beat 5 as a placeholder pending Sofi's personal Spanish version and complete message.
 
 ## Copy & Easter Eggs
 
-**Scope rule:** Preserve the text below as a creative copy bank. Do **not** turn every snippet into a required screen, obstacle or feature. Keep the approved narrative and mobile pacing more important than fitting in every joke. A and B were explicitly endorsed; C–H were subsequently accepted as **selected copy candidates** (especially E–H as alternatives for the debug sequence, **not** four separate scenes). I and J are approved verbatim for beat 4. Final placement and exact use remain flexible unless identified as a fixed requirement elsewhere.
+**Scope rule:** Preserve this creative copy bank, without turning every snippet into a compulsory scene. A and B were endorsed explicitly; C–H are selected copy candidates (not separate screens). I and J retain their approved English wording as reference; **I is dialogue signed by Sofi and may be localized into Spanish by her later**. Keep all system UI in English. The approved narrative and pacing take precedence over using every joke.
 
 ### Selected copy (A–J)
 
@@ -179,7 +224,7 @@ These are **prompts for invention, not requirements**. Claude may ignore or adap
 - The technical mismatch is the joke: `please_work.js` appearing in Sofi's supposed SAP/ABAP backend; do not pretend it is authentic ABAP code.
 - Developer note: `I have absolutely no idea what SAP RAP is, but how hard can it be?`
 - Faux API errors as optional joke fragments: `GET /david/emotions → 403 Forbidden`, `GET /david/drama → 200 OK`, `DELETE /david/emo-phase → 405 Method Not Allowed`.
-- The optional Cloud Strife meme could surface as a misidentified user profile, and David's silly portraits as an obviously broken facial-recognition module—only if they feel organic.
+- Cloud's pixel-art GIF, the five traits from the meme, and one silly portrait are now **approved** for the separate Debug Mode identity/facial-recognition views defined above. The original meme should **not** be displayed. Do not add a second gallery or forced mini-game.
 - The best *Pony Island*-like surprise comes from discovering an unintended route through a broken UI or hidden file, **not** adding more minigames. Never simulate a real phone system alert or exfiltrate data.
 - Potential flavor only: `BUILD 666`, birthday build `15.11.2026`, `BARBARIDAD DETECTED` / `BARBARIDAD RESOLVED`. Use sparingly to preserve the catchphrase's impact.
 
@@ -188,7 +233,7 @@ These are **prompts for invention, not requirements**. Claude may ignore or adap
 - This birthday gift is an **explicit exception** to Sofi's usual SDD/TDD method: quick, focused vibe coding; no formal feature decomposition, extra documentation, test suite or unnecessary abstractions.
 - Still manually check the full mobile journey, all controls and the ending. Reuse existing code/assets only after inspecting actual current files. No assumptions about an existing repository or design system.
 - No deployment, paid services, purchases, commits or pushes without explicit approval.
-- Implementation is authorized. Unresolved content stays as clearly identified placeholders.
+- Implementation is authorized within the approved scope. **Apply the changes one small reviewed pass at a time** (see the order below); do not combine unrelated gameplay changes into a giant unreviewed rewrite. Unavailable media and personal messages stay as clearly identified placeholders.
 
 ## Creative autonomy, tools & efficiency
 
@@ -200,7 +245,20 @@ These are **prompts for invention, not requirements**. Claude may ignore or adap
 - **Keep token use lean:** Treat this file as the single source of truth; do not create parallel specs, task documents, repeated audits or agent teams. Read only relevant files and log excerpts. Prefer direct, focused edits, concise progress/output and one coherent implementation pass with targeted corrections. Use extra tools/plugins only when their benefit justifies context overhead; don't repeatedly research already-settled decisions.
 - **Verification:** No automated test suite is requested. Still run the available build/check if one exists and manually inspect the complete mobile flow, puzzle, media and emotional ending. Report what was actually checked and any limitations.
 
-## Pending decisions
+## Implementation order (small reviewable passes)
 
-1. The exact "Are you sure?" / refusal microinteraction and copy (keep the approved forced-accept behavior).
-2. Final personal message and media selections/availability.
+These are **checkpoints for work in the current project**, not feature specs or extra documents. Do one at a time, show the result, and wait for Sofi's approval before moving to the next. Check the current repository and reuse existing UI/styles each time.
+
+1. **Opening + guide:** Implement the approved opening in beat 1 (loader, sleeping Sofi, wake interaction, synchronised dialogue, choices and forced acceptance). Leave the exact confirmation microcopy as a placeholder until reviewed.
+2. **Debug Mode discoveries + audio:** Add the early Luis song/player, Cloud GIF + five traits, one facial-recognition photo and the optional fringe-video viewer. Preserve the typed `RUN` puzzle; do not add puzzles. Check media continuity between screens.
+3. **Empty gift + four rollbacks:** Remove the misleading cursor; make Version History/ROLL BACK self-explanatory; reduce to four causal states including restored letter and intentional CSS removal.
+4. **Sofi and Luis together at CSS loss:** Add the short exchange as part of the third rollback, with a placeholder for Luis's visual if needed. **The song is already available**; do not present it as newly discovered here.
+5. **Final content + language:** Insert the finished Spanish character dialogue, birthday message, the real photo and final selected media when supplied. Preserve system UI in English and the calm ending.
+6. **Focused verification + delivery decision:** Check the complete journey on mobile (especially typing, playback, transitions, tap targets, and audio/video behavior) and run the available build. Obtain explicit approval before commits, pushes or deployment. Review public-repository exposure of personal assets before publishing.
+
+## Pending decisions / assets
+
+1. Exact `ARE YOU SURE?` microcopy (the opening flow, tap sequence and forced acceptance are approved).
+2. Sofi/Luis's **final Spanish voice and dialogue**, including the existing signed Git note and the final letter introduction; final birthday message.
+3. Luis's audio file/title and visual representation; suitable licensed/approved Cloud pixel-art GIF; final photo and selection of David's funny photo.
+4. Publication/privacy choice and final technical/visual mobile checks; no deployment is authorized automatically.
