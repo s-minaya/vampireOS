@@ -1,0 +1,74 @@
+import '@fontsource/jacquard-24/400.css';
+import '@fontsource/im-fell-english/400.css';
+import '@fontsource/im-fell-english/400-italic.css';
+import '@fontsource/im-fell-english-sc/400.css';
+import '@fontsource/vt323/400.css';
+import '@fontsource/newsreader/400.css';
+import '@fontsource/newsreader/400-italic.css';
+import './styles.css';
+
+import { mountUpdate } from './screens/update.js';
+import { mountDebug } from './screens/debug.js';
+import { mountCrypt } from './screens/crypt.js';
+import { mountLetter } from './screens/letter.js';
+
+const SCREENS = {
+  update: { mount: mountUpdate, theme: 'dark' },
+  debug: { mount: mountDebug, theme: 'dark' },
+  crypt: { mount: mountCrypt, theme: 'dark' },
+  letter: { mount: mountLetter, theme: 'light' },
+};
+const THEME_COLORS = { dark: '#0a0506', naked: '#c9c6c3', light: '#fbf9f7' };
+const STORAGE_KEY = 'vampireos:screen';
+
+const stage = document.getElementById('stage');
+const themeMeta = document.querySelector('meta[name="theme-color"]');
+let dispose = null;
+
+function remember(name) {
+  try {
+    localStorage.setItem(STORAGE_KEY, name);
+  } catch {
+    // Private mode: progress simply is not remembered.
+  }
+}
+
+function recall() {
+  try {
+    const name = localStorage.getItem(STORAGE_KEY);
+    return SCREENS[name] ? name : 'update';
+  } catch {
+    return 'update';
+  }
+}
+
+const app = {
+  go(name) {
+    if (dispose) dispose();
+    stage.innerHTML = '';
+    stage.className = `stage stage--${name}`;
+    app.theme(SCREENS[name].theme);
+    remember(name);
+    window.scrollTo(0, 0);
+    dispose = SCREENS[name].mount(stage, app) || null;
+  },
+  theme(theme) {
+    document.body.dataset.theme = theme;
+    if (themeMeta) themeMeta.setAttribute('content', THEME_COLORS[theme]);
+  },
+};
+
+// Warm up every typeface so the ending never flashes a fallback font.
+if (document.fonts && document.fonts.load) {
+  ['48px "Jacquard 24"', '19px "IM Fell English"', 'italic 19px "IM Fell English"', '20px "IM Fell English SC"', '19px "VT323"', '18px "Newsreader"', 'italic 29px "Newsreader"'].forEach(
+    (font) => document.fonts.load(font).catch(() => {}),
+  );
+}
+
+// Reloading resumes the current chapter. Add ?restart to the URL to start over.
+const params = new URLSearchParams(window.location.search);
+if (params.has('restart')) {
+  remember('update');
+  window.history.replaceState(null, '', window.location.pathname);
+}
+app.go(recall());

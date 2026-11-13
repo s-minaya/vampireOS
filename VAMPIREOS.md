@@ -1,6 +1,6 @@
 # VampireOS — Project brief
 
-**Status:** Narrative approved, including beat 4. Remaining open items are listed under *Pending decisions*. No implementation is authorized yet.
+**Status:** Narrative, visual direction and prototype approved; implementation authorized on November 12, 2026. Remaining open items are listed under *Pending decisions*.
 **Deadline:** November 15, 2026 (David's birthday).
 
 ## Purpose
@@ -13,7 +13,13 @@ Sofi, a frontend developer who often jokes that she understands none of David's 
 
 ## Approved direction
 
-- Aesthetic: dark, gothic, romantic, theatrical vampire atmosphere combined with fake retro operating-system UI, terminal windows, files and errors. No final visual design or palette approved yet.
+- Aesthetic: dark, gothic, romantic, theatrical vampire atmosphere combined with fake retro operating-system UI, terminal windows, files and errors.
+- Visual direction: **Blackletter BIOS**, as established in the approved Claude Design prototype (https://claude.ai/artifact/GpNSppTKQx3761d5X8ZW48). The prototype is the visual and interaction reference; do not redesign it.
+  - Oxblood-black ground, bone text, one arterial red; hard pixel borders, pinstripe title bars, dither and scanlines.
+  - One typeface per voice: pixel blackletter (Jacquard 24) for VampireOS's pomp, IM Fell English for its aristocratic speech, VT323 for the machine, Newsreader only for the letter.
+  - Pink (the sprite's sweater) marks Sofi's comments, commits and name.
+  - The rollback is a sunrise: black gothic, then grey unstyled HTML, then a white page.
+- Stack: Vite with vanilla JavaScript and self-hosted fonts (chosen during implementation).
 - All visible UI/copy in **English**, except **BARBARIDAD**, David's habitual catchphrase, used as a recurring error term; `BARBARIDAD_EXCEPTION` is approved.
 - VampireOS speaks in a formal, dramatic, aristocratic voice. Sofi's overconfident, technically dubious voice is revealed through code comments, debug logs and hidden files.
 - Sofi does **not** appear as an on-screen support character during the game. Her existing sprite appears **only at the emotional ending**, beside the approved lead-in text.
@@ -25,7 +31,7 @@ Sofi, a frontend developer who often jokes that she understands none of David's 
 
 1. **Mandatory Birthday Update:** David sees `ACCEPT MY FATE` and `I REFUSE`. `I REFUSE` exists only to exasperate him and must eventually **force him to tap `ACCEPT MY FATE`**. Both initial choices trigger an extra `ARE YOU SURE?` confirmation before installation. If David chooses `I REFUSE`, the flow must eventually return him to `ACCEPT MY FATE`—refusal cannot start installation on its own or offer a real escape. Exact confirmation wording and tap sequences remain undecided.
 2. **Failure:** the update reaches 99% and fails, showing `BARBARIDAD_EXCEPTION` and implying that Sofi touched the backend. Repeating/restarting does not fix the failure; David can enter debug mode.
-3. **Debug tools + trivial code puzzle:** David explores a fake filesystem, discovers Sofi's questionable comments, and fixes an absurdly simple `false` → `true` return/condition (a `please_work.js` file is the working concept). Mobile-friendly taps, not typing actual code. There must be **only one** code puzzle, intentionally easy for him.
+3. **Debug tools + trivial code puzzle:** David explores a fake filesystem, discovers Sofi's questionable comments, and fixes an absurdly simple `false` → `true` return in `please_work.js`. He reads a short function, edits the code himself with the mobile keyboard, and presses `RUN`, which runs two checks and shows debugging feedback. Nothing highlights the wrong value or reveals the fix. The typed code must never be executed as unrestricted JavaScript: it cannot freeze or compromise the page. There must be **only one** code puzzle, intentionally easy for him.
 4. **Exploration after the fix — The Commit Crypt:** After the `false` → `true` fix, David finds an **empty gift folder**, explores Sofi's commit history, and rolls back through earlier versions. The gothic interface progressively disappears until the original, perfectly working birthday message is revealed.
    - **Backstory, discovered gradually through the commits:** Sofi first wrote a simple, working birthday message, then tried to build an elaborate operating system around it, broke everything, and eventually deleted the letter out of embarrassment. Git history preserved it. She did **not** build VampireOS to hide the letter.
    - Do not reveal the deletion or its reason upfront; the empty folder must not explain itself.
@@ -182,11 +188,11 @@ These are **prompts for invention, not requirements**. Claude may ignore or adap
 - This birthday gift is an **explicit exception** to Sofi's usual SDD/TDD method: quick, focused vibe coding; no formal feature decomposition, extra documentation, test suite or unnecessary abstractions.
 - Still manually check the full mobile journey, all controls and the ending. Reuse existing code/assets only after inspecting actual current files. No assumptions about an existing repository or design system.
 - No deployment, paid services, purchases, commits or pushes without explicit approval.
-- Beat 4 is decided. Implementation starts only when Sofi explicitly gives the go-ahead.
+- Implementation is authorized. Unresolved content stays as clearly identified placeholders.
 
 ## Creative autonomy, tools & efficiency
 
-**Scope:** Creative freedom applies to proposals now. Technical changes and installations are authorized **only during implementation, once Sofi explicitly gives the go-ahead**; until then the project remains read-only.
+**Scope:** Creative and technical autonomy apply within the approved scope, now that implementation is authorized.
 
 - **Creative freedom:** Within the approved premise, narrative order, tone and constraints, invent sharper English copy, optional jokes, subtle surprises, visual interactions, transitions and polish. Use the copy bank selectively; do not mechanically include everything. Favor a memorable, coherent, brief mobile experience over extra features.
 - **Decision boundary:** Make small reversible implementation and presentation decisions independently. Propose any substantial change to approved behavior, story, media usage or project scope before applying it; do not silently settle items marked pending. If an asset is unavailable, use a clearly identified placeholder rather than inventing its contents.
@@ -198,4 +204,3 @@ These are **prompts for invention, not requirements**. Claude may ignore or adap
 
 1. The exact "Are you sure?" / refusal microinteraction and copy (keep the approved forced-accept behavior).
 2. Final personal message and media selections/availability.
-3. Concrete visual design and implementation stack after reviewing current source/assets.
