@@ -12,6 +12,8 @@ import bolt1 from '../assets/luis-bolt-1.webp';
 import bolt2 from '../assets/luis-bolt-2.webp';
 import bolt3 from '../assets/luis-bolt-3.webp';
 import bolt4 from '../assets/luis-bolt-4.webp';
+import confused1 from '../assets/luis-confused-1.webp';
+import confused2 from '../assets/luis-confused-2.webp';
 
 // from_luis.mp3: Luis's entrance. A terse system log, the lights go out, then he bursts in
 // (luis-crazy) on the guitar riff, with lightning, neon notes and sound waves timed to the
@@ -381,6 +383,73 @@ export function mountLuis(host, { scope, onDone }) {
       ref('play').removeEventListener('click', onPlay);
       unsubscribe?.();
       music.release('luis'); // leaving mid-entrance: the song carries on where it was
+    },
+  };
+}
+
+// A brief second appearance (the CSS rollback, crypt.js): Luis shrugging (luis-confused 1 and
+// 2; the two frames alternate while he speaks, a hand-drawn boil), his bubble above him. No
+// log, riff, bolts or song card, and the song is not held. Create it inside a tap (his voice
+// unlocks there), then start() when the scene wants him to speak; the caller places and
+// shows `host`.
+const cameo = `
+  <div class="lz-cameo">
+    <div class="lz-cameo-text">${bubble('LUIS')}</div>
+    <div class="lz-cameo-luis" data-ref="luis" role="img" aria-label="Luis, shrugging">
+      <img class="lz-shrug" src="${confused1}" alt="" draggable="false">
+      <img class="lz-shrug lz-shrug--2" src="${confused2}" alt="" draggable="false">
+    </div>
+  </div>
+`;
+
+let cameoImages = null;
+export function preloadLuisCameo() {
+  if (cameoImages) return;
+  cameoImages = [confused1, confused2].map((src) => {
+    const img = new Image();
+    img.src = src;
+    img.decode().catch(() => {});
+    return img;
+  });
+}
+
+export function mountLuisCameo(host, { scope, lines, onDone }) {
+  host.innerHTML = cameo;
+  const files = preloadLuis();
+  const voice = createSpeechAudio({
+    src: voiceUrl,
+    fetchData: () => files.voice.then((data) => data.slice(0)), // decodeAudioData detaches its input
+    volume: VOICE_VOLUME,
+  });
+  void voice.prepare();
+  let phase = 'waiting'; // waiting | talking | done
+  const dialogue = createDialogue({
+    scope,
+    host,
+    lines,
+    voice,
+    mouth: host.querySelector('[data-ref="luis"]'),
+    anchor: host.firstElementChild,
+    onDone: () => {
+      phase = 'done';
+      scope.after(dialogue.quiet() + DONE_DELAY, () => onDone?.());
+    },
+  });
+  const onClick = () => {
+    if (phase !== 'talking') return;
+    void voice.prepare();
+    dialogue.advance();
+  };
+  host.addEventListener('click', onClick);
+  return {
+    start(lockMs = 0) {
+      phase = 'talking';
+      dialogue.start(lockMs);
+    },
+    dispose() {
+      host.removeEventListener('click', onClick);
+      dialogue.dispose();
+      voice.dispose();
     },
   };
 }

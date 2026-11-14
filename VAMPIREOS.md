@@ -53,12 +53,7 @@ Sofi, a frontend developer who often jokes that she understands none of David's 
      3. **Undo `add vampires`:** The gothic look/CSS deliberately vanishes. Explain it in-universe (`GOTHIC THEME REMOVED` / `gothic.css no longer exists`); **Sofi and Luis appear together and argue in the now-unstyled interface**. Sofi says `Luis broke the CSS.` Luis replies `I don't even know what CSS is. I made you a song.` This refers back to the song he already shared in Debug Mode, **not** a second song reveal. Keep their appearance brief and dialogue-first. The track can continue playing.
      4. **Return to the original commit:** Strip away the last unnecessary OS layer and reveal the original, **only bug-free** birthday letter and approved **INITIAL COMMIT** copy J. The player can now open the letter.
    - **Backstory:** Sofi first wrote a simple, working birthday message, then built an extravagant OS around it, broke things, and ultimately deleted the letter out of embarrassment. Git history preserved it; **she did not build VampireOS to hide the letter**. Use a few chaotic commit labels within these four narrative states; maintain a logical progression. The grey unstyled screen is an intentional rewind, not a rendering failure.
-5. **Final scene — the recovered message:** After the original commit, the errors, manipulative UI and sarcastic guidance stop. Sofi's sprite appears in a **calmer, more prominent** presentation alongside the existing **provisional English opening**, to be adapted into Spanish by Sofi:
-
-   > Okay, I might not understand what you do for a living. Or how your backend works. Or what RAP actually means.  
-   > But there's one thing I'm absolutely sure of.
-
-   Sofi's final personal message is not yet provided; **keep a clear placeholder**. A real photo of David, Sofi and Luis is planned; keep a placeholder until chosen. This scene is the **one part of VampireOS that works perfectly**: no new glitches, no joke that overshadows the sentiment. Luis's music remains available if David pressed play.
+5. **Final scene — the recovered message (implemented):** After the original commit, the errors, manipulative UI and sarcastic guidance stop. The INITIAL COMMIT card fades and `birthday_letter.txt` opens as a clean, light letter on the same paper. **Sofi and Luis present it together, ridiculously cool (005-favoriting with sunglasses; Luis completely static), with no dialogue, bubbles or voice.** The letter is one text with the approved copy, verbatim (in `src/content.js`): the English opening (`Okay, we might not understand what you do for a living. Or how your backend works. Or what RAP actually means. But there's one thing we're absolutely sure of.`), the Spanish body, `Feliz cumpleaños, David.`, and the signature `Con todo nuestro cariño, / Sofi y Luis`. The real photo of the three (`foto-cumpleaños.jpg`) follows the message, then **PLAY AGAIN**, which restarts the whole experience through the existing `?restart` mechanism. This scene is the **one part of VampireOS that works perfectly**: no new glitches, no joke that overshadows the sentiment. Luis's music remains available if David pressed play.
 
 ## Assets and media — approved vs pending
 
@@ -70,7 +65,7 @@ Sofi, a frontend developer who often jokes that she understands none of David's 
 - **Cloud pixel-art GIF:** replaces display of the original meme. The meme is **reference material for the five traits**, not the asset to show. Select/confirm a fitting GIF and check usage permissions before public release.
 - **One funny photo of David:** `facial_recognition.log`; choose from available photos without changing them into inaccurate representations.
 - **Existing fringe video:** `emo_mode.mp4`, opened optionally from Debug Mode.
-- **One real photo of David, Sofi and Luis:** final letter, file still to be selected/provided.
+- **One real photo of David, Sofi and Luis:** final letter, `src/assets/foto-cumpleaños.jpg` (in use).
 
 **Not included without new approval:** teenage emo photo gallery, general game-character screenshots, additional galleries, more media puzzles.
 
@@ -96,7 +91,7 @@ These lines establish **meaning and timing**, not final voice. **Only system/UI 
 - **Sofi, first rollback hint:** `Each rollback takes us back through one of my decisions. Please try not to judge me by the commit messages.`
 - **Sofi, when the old bug resurfaces:** `You're not breaking it again. You're looking at an older version.`
 - **CSS rollback dialogue — agreed English starting point:** `Sofi: "Luis broke the CSS."` / `Luis: "I don't even know what CSS is. I made you a song."` / optional Sofi: `...which is considerably more useful than whatever I was doing.`
-- **Ending:** Preserve the opening in beat 5 as a placeholder pending Sofi's personal Spanish version and complete message.
+- **Ending:** final letter delivered and implemented (beat 5); no dialogue in the scene.
 
 ## Copy & Easter Eggs
 
@@ -259,6 +254,6 @@ These are **checkpoints for work in the current project**, not feature specs or 
 ## Pending decisions / assets
 
 1. Exact `ARE YOU SURE?` microcopy (the opening flow, tap sequence and forced acceptance are approved).
-2. Sofi/Luis's **final Spanish voice and dialogue**, including the existing signed Git note and the final letter introduction; final birthday message.
-3. Luis's audio file/title and visual representation; suitable licensed/approved Cloud pixel-art GIF; final photo and selection of David's funny photo.
+2. Sofi/Luis's **final Spanish voice and dialogue**, including the existing signed Git note (the final letter itself is done).
+3. Luis's audio file/title and visual representation; suitable licensed/approved Cloud pixel-art GIF; selection of David's funny photo (the final photo is in).
 4. Publication/privacy choice and final technical/visual mobile checks; no deployment is authorized automatically.

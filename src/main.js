@@ -28,6 +28,8 @@ const SCREENS = {
 };
 const THEME_COLORS = { dark: '#0a0506', naked: '#c9c6c3', light: '#fbf9f7' };
 const STORAGE_KEY = 'vampireos:screen';
+const INTRO_KEY = 'vampireos:debug-intro'; // Sofi's Debug Mode introduction has been heard to the end
+const GIFT_KEY = 'vampireos:gift-intro'; // Sofi's reaction to the empty gift folder has been heard to the end
 
 const stage = document.getElementById('stage');
 const themeMeta = document.querySelector('meta[name="theme-color"]');
@@ -50,7 +52,35 @@ function recall() {
   }
 }
 
+// Sofi introduces Debug Mode once per playthrough, and reacts to the empty gift folder once.
+// Like the chapter, both survive a reload (only once finished); they are also kept in memory,
+// for a private window that cannot store them.
+const heard = { intro: false, gift: false };
+const heardKey = { intro: INTRO_KEY, gift: GIFT_KEY };
+
+function isHeard(which) {
+  if (heard[which]) return true;
+  try {
+    return localStorage.getItem(heardKey[which]) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function markHeard(which) {
+  heard[which] = true;
+  try {
+    localStorage.setItem(heardKey[which], '1');
+  } catch {
+    // Private mode: remembered until the page is closed.
+  }
+}
+
 const app = {
+  introHeard: () => isHeard('intro'),
+  markIntroHeard: () => markHeard('intro'),
+  giftHeard: () => isHeard('gift'),
+  markGiftHeard: () => markHeard('gift'),
   go(name, options) {
     if (dispose) dispose();
     if (name === 'update') music.dispose(); // the song belongs to Debug Mode onwards
@@ -64,6 +94,12 @@ const app = {
   theme(theme) {
     document.body.dataset.theme = theme;
     if (themeMeta) themeMeta.setAttribute('content', THEME_COLORS[theme]);
+  },
+  // PLAY AGAIN: the whole experience from the first screen. A real navigation to ?restart
+  // (handled below) rather than a second reset path: the reload drops every timer, listener,
+  // AudioContext and media element, and the restart branch clears the saved progression.
+  restart() {
+    window.location.replace(`${window.location.pathname}?restart`);
   },
 };
 
@@ -103,6 +139,12 @@ function preload() {
 const params = new URLSearchParams(window.location.search);
 if (params.has('restart')) {
   remember('update');
+  try {
+    localStorage.removeItem(INTRO_KEY); // a new playthrough: Sofi introduces Debug Mode again
+    localStorage.removeItem(GIFT_KEY); // ...and reacts to the empty gift folder again
+  } catch {
+    // Private mode: nothing was stored.
+  }
   music.dispose();
   window.history.replaceState(null, '', window.location.pathname);
 }

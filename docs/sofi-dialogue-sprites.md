@@ -143,3 +143,23 @@ Source art and audio live untracked in `luis/` at the repo root; keep originals 
 ### Known limitations
 
 Same environment as Sofi (headless Chromium only; iOS Safari, the silent switch and real speakers untested). Boundaries, accent times and levels were measured, not listened to. The entrance replays on every open.
+
+## The Commit Crypt (crypt.js): Sofi's rows, Luis's cameo
+
+Narrative: `VAMPIREOS.md` beat 4 (four rollbacks). The characters are created **inside the ROLL BACK tap** (their voices unlock there), on detached hosts, and placed into the older version by the scene's `attach()` once the reset sweep has passed; each scene has its own `createScope()`, disposed on the next ROLL BACK and on unmount. ROLL BACK is `.is-pending` (invisible) until the dialogue ends.
+
+- **Sofi** is `mountOpening(host, { awake: true, compact: true, reaction: false, startAfter, lines, pose, holds })`: `compact` is the opening's guide row (`.op.is-compact`), enlarged to 128 px by `.c-guide` with 10 px of headroom for the jolt and the «?». `say(lines, { pose, holds, onDone })` types more lines later in the same scene (after Luis), with the same bubble and voice and no 009 reaction.
+- **`suspicious`** (first rollback) is 013-suspicious compiled from `_suspicious.scss`: `suspicious.webp` (4 frames of 384) on the host, `suspicious-face.webp` (5 cells of 184×128 at 112, 120, ceil-rounded) in the `grin` layer, one 3.5 s pass with `forwards`; its last frame is talking's frame 0 but for the mouth, so `startAfter` equals the row's appearance plus 3.5 s and the switch to `talking` only moves the mouth. The other poses are the existing ones (`puzzled`, `startled`, `lowered` + `.is-sheepish`, `sly`, `smirk`).
+- **Luis** is `mountLuisCameo(host, { scope, lines, onDone })` → `{ start, dispose }` in `luis.js`: `luis-confused-1/2.webp` (`luis/luis-confused1.png`, `luis-confused2.png` resized to 640×480, Lanczos) stacked in `.lz-cameo-luis`; while `.is-speaking` the second frame alternates at 0.5 s (`lz-shrug`, a hand-drawn boil) with a small bob, so there is no mouth crop for this pose. His voice is `luis-voice.mp3` at `VOICE_VOLUME` through the shared `createDialogue`; the song is **not** held. `preloadLuisCameo()` decodes the two frames; the crypt calls it on mount.
+- In the unstyled version (`body[data-theme='naked']`) `.naked` overrides make the bubbles plain boxes in the default serif; the sprites are untouched. `.c-guide .op`, `.lz-cameo` and the ROLL BACK keys carry `scroll-margin-bottom` so they are never scrolled under the player.
+
+## The letter (letter.js): 005-favoriting, Luis still
+
+Narrative: `VAMPIREOS.md` beat 5. Nobody talks here: no bubble, no voice, no `createDialogue`. The copy lives in `src/content.js` (approved; don't edit it in the screen).
+
+- **Sofi** is `.fav`, 005-favoriting hand-compiled from `_favoriting.scss`: `favoriting.webp` (3 frames of 384: «oh!», sunglasses down, sunglasses on) on the host, `favoriting-sparkle.webp` as `::before` (60 px at 279, 204) and `favoriting-stamp.webp` as `::after` (2 cells of 170×154 at 214, 210; transform-origin 81.5, 85.5). The whole 4.15 s loop runs infinitely: `fav-frames`/`fav-shake` on the host, `fav-twinkle` on the sparkle, `fav-stamp`/`fav-slam` on the stamp. The stamp overflows her box while it falls, so `.duo*` must never clip. Rendered at 192 px (half scale, pixelated).
+- **Luis** is `luis-favoriting.webp` (`luis/luis-favoriting.png`, 1199×1312, resized to 640 px wide, Lanczos), a plain `<img>` at 208 px, completely static, `margin-left: -20px` behind Sofi (`z-index` 1 vs her 2) so the stamp lands in front of his shoulder.
+- Both stand on `.duo-ground`, a full-bleed 1.5 px rule; then the text (`.letter-text`), the photo (`foto-cumpleaños.jpg`, polaroid) and PLAY AGAIN.
+- `preloadLetter()` decodes the sprites and the photo; the crypt calls it on mount so nothing pops in during the `.dawn` stagger.
+- **Transition:** the crypt's `open()` adds `.is-leaving` to `.origin` (`dusk`, 0.45 s), then `app.go('letter')`; both screens share the `light` theme, so only the content changes.
+- **PLAY AGAIN** calls `app.restart()` (`main.js`), which is `location.replace(pathname + '?restart')`: the existing restart branch clears the chapter, both one-time intros and the song, and the reload drops every timer, listener and AudioContext. No second reset path.

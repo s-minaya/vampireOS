@@ -279,7 +279,7 @@ export function mountUpdate(root, app) {
     },
     dismiss: removeRefusal,
     restart: () => install(true),
-    debug: () => app.go('debug', { intro: true }),
+    debug: () => app.go('debug'), // Sofi's introduction plays there if it has not been heard yet
   });
 
   showPrompt(true);

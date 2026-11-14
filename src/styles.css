@@ -626,6 +626,94 @@ body:not([data-theme='dark']) .crt { opacity: 0; }
 .sofi-sprite[data-sofi='giggle'] [data-layer='sparkle'] { visibility: visible; animation: sofi-sparkle-out 1.2s ease-in forwards; }
 .sofi-sprite[data-sofi='giggle'] { animation: sofi-giggle 1.2s ease-in-out; }
 
+/* 010-needs-context, at the empty gift folder: the original sheet's frames, unchanged.
+   puzzled = «¿mm?» head tilt, thinking = finger on chin, sly = finger on lips (with the 009 sparkle),
+   pleased = the rest frame with needs-context-face (closed smile, blinking as in _needs-context.scss).
+   lowered = 004-talking's half-lidded frame, eyes down. The «?» is needs-context-question.webp,
+   placed as in _needs-context.scss (ceil-rounded boxes of 384). */
+.sofi-sprite:is([data-sofi='puzzled'], [data-sofi='thinking'], [data-sofi='sly'], [data-sofi='pleased']) { background-image: url('./assets/needs-context.webp'); background-size: 400% 100%; }
+.sofi-sprite[data-sofi='pleased'] { background-position: 0 0; }
+.sofi-sprite[data-sofi='puzzled'] { background-position: 33.33333% 0; }
+.sofi-sprite[data-sofi='thinking'] { background-position: 66.66667% 0; }
+.sofi-sprite[data-sofi='sly'] { background-position: 100% 0; }
+.sofi-sprite[data-sofi='lowered'] { background-image: url('./assets/talking.webp'); background-size: 300% 100%; background-position: 50% 0; }
+.sofi-sprite[data-sofi='sly'] [data-layer='sparkle'] { visibility: visible; animation: sofi-sparkle-in 1.3s ease-out forwards; }
+.sofi-sprite[data-sofi='pleased'] [data-layer='grin'] {
+  visibility: visible; left: 29.167%; top: 31.25%; width: 47.917%; aspect-ratio: 184 / 128;
+  background-image: url('./assets/needs-context-face.webp'); background-size: 300% 100%; background-position: 0 0;
+  animation: sofi-grin-blink 1.12s step-end infinite;
+}
+@keyframes sofi-grin-blink {
+  0% { background-position: 0 0; }
+  71.429% { background-position: 50% 0; }
+  80.357% { background-position: 100% 0; }
+  91.071% { background-position: 50% 0; }
+}
+.sofi-sprite:is([data-sofi='puzzled'], [data-sofi='thinking'])::after {
+  content: '';
+  position: absolute;
+  left: 72.917%;
+  top: 2.084%;
+  width: 20.834%;
+  aspect-ratio: 80 / 88;
+  background: url('./assets/needs-context-question.webp') 0 0 / 200% 100% no-repeat;
+  pointer-events: none;
+  transform-origin: 35% 93%;
+  animation: sofi-query-hop 0.72s cubic-bezier(0.25, 1.5, 0.5, 1) both, sofi-query-twinkle 2.4s step-end 0.72s infinite;
+}
+@keyframes sofi-query-hop {
+  0%, 30% { opacity: 0; transform: rotate(-20deg) scale(0.3); }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes sofi-query-twinkle {
+  0% { background-position: 0 0; }
+  45% { background-position: 100% 0; }
+  52% { background-position: 0 0; }
+  80% { background-position: 100% 0; }
+  87% { background-position: 0 0; }
+}
+
+/* 013-suspicious, at the first rollback: «mmm… I see». One pass (3.5 s): the rest frame, a quick
+   blink, the head tilted with a side-eye and one raised brow, the eyes narrowing into a knowing
+   smile, back to a warm smile, a blink and she straightens, ready to explain. Frame 3 is talking's
+   frame 0 but for the mouth, so switching to talking afterwards only moves the mouth. Compiled
+   from _suspicious.scss: a strip of 4 frames of 384; the faces are 184×128 cells at (112, 120),
+   ceil-rounded, in the grin layer. */
+.sofi-sprite[data-sofi='suspicious'] {
+  background-image: url('./assets/suspicious.webp');
+  background-size: 400% 100%;
+  background-position: 0 0;
+  animation: sofi-suspicious 3.5s step-end 1 forwards;
+}
+.sofi-sprite[data-sofi='suspicious'] [data-layer='grin'] {
+  visibility: visible; left: 29.167%; top: 31.25%; width: 47.917%; aspect-ratio: 184 / 128;
+  background-image: url('./assets/suspicious-face.webp'); background-size: 500% 100%; background-position: 0 0;
+  opacity: 0;
+  animation: sofi-suspicious-face 3.5s step-end 1 forwards, sofi-suspicious-show 3.5s step-end 1 forwards;
+}
+@keyframes sofi-suspicious {
+  0% { background-position-x: 0%; }
+  13.714% { background-position-x: 33.333%; }
+  68% { background-position-x: 66.667%; }
+  86.571%, 100% { background-position-x: 100%; }
+}
+@keyframes sofi-suspicious-face {
+  0% { background-position-x: 0%; }
+  32.286% { background-position-x: 25%; }
+  34.571% { background-position-x: 50%; }
+  86.571% { background-position-x: 75%; }
+  89.429%, 100% { background-position-x: 100%; }
+}
+@keyframes sofi-suspicious-show {
+  0% { opacity: 0; }
+  11.429% { opacity: 1; }
+  13.714% { opacity: 0; }
+  32.286% { opacity: 1; }
+  68% { opacity: 0; }
+  86.571% { opacity: 1; }
+  91.429%, 100% { opacity: 0; }
+}
+
 @keyframes sofi-sparkle-in {
   0%, 18% { opacity: 0; transform: scale(0); }
   30% { opacity: 1; transform: scale(1.25); }
@@ -816,7 +904,575 @@ body:not([data-theme='dark']) .crt { opacity: 0; }
 
 .void { position: relative; height: 400px; background: repeating-conic-gradient(#150a0d 0% 25%, #0a0506 0% 50%) 0 0 / 4px 4px; }
 .cobweb { position: absolute; right: 0; top: 0; }
-.void-cursor { position: absolute; left: 14px; top: 14px; }
+.void { overflow: hidden; }
+.gift-next { scroll-margin-bottom: calc(var(--player-room, 0px) + 18px); }
+.gift-next:empty { display: none; }
+
+/* Sofi inside the empty folder: she rises from behind the status bar and stands at the left;
+   her bubble hangs above her, its tail pointing down at her. */
+.gift-sofi { position: absolute; inset: 0; scroll-margin: 60px 0 calc(var(--player-room, 0px) + 18px); }
+.op.is-inset { position: absolute; inset: 0; padding: 0; display: block; }
+.op.is-inset .op-sofi { position: absolute; left: 6px; bottom: 0; width: 192px; animation: gift-rise 0.6s cubic-bezier(0.22, 1.3, 0.42, 1) both; }
+.op.is-inset :is(.op-ground, .op-wait) { display: none; }
+.op.is-inset .op-text { position: absolute; left: 14px; right: 30px; bottom: 202px; width: auto; margin: 0; }
+.op.is-inset .op-bubble { align-self: stretch; }
+.op.is-inset .op-type { font-size: 20px; line-height: 23px; }
+.op.is-inset .op-tail { left: 86px; top: auto; bottom: -8px; margin: 0; border-left: 0; border-top: 0; border-right: 2px solid var(--bubble, var(--pink)); border-bottom: 2px solid var(--bubble, var(--pink)); }
+.op.is-inset .sofi-sprite { transition: transform 0.3s cubic-bezier(0.3, 1.5, 0.5, 1); }
+.op.is-inset .sofi-sprite.is-sheepish { transform: translateY(7px); transition-timing-function: ease-in; transition-duration: 0.45s; }
+@keyframes gift-rise { from { transform: translateY(100%); } to { transform: none; } }
+
+/* ── 2b · DO_NOT_OPEN/identity.service: the identity scan (identity.js) ────
+   Lines with .ident-step keep their room and appear with .is-on; blocks with [hidden]
+   make the window grow, and identity.js scrolls its end back above the music player. */
+.ident { scroll-margin-bottom: calc(var(--player-room, 0px) + 18px); }
+.ident-step { visibility: hidden; }
+.ident-step.is-on { visibility: visible; }
+
+.ident-log { padding: 10px 14px 8px; font-family: var(--f-mono); font-size: 18px; line-height: 23px; }
+/* Typed by clipping: the text is whole in the page, and stays visible should the animation not run. */
+.ident-type { display: inline-block; overflow: hidden; white-space: nowrap; vertical-align: bottom; }
+.ident-log > div:first-child .ident-type,
+.ident-step.is-on > .ident-type { animation: ident-type calc(var(--n) * 22ms) steps(var(--n), end) both; }
+
+.ident-slot {
+  height: 32px;
+  box-sizing: border-box;
+  margin: 0 14px;
+  border: 1px dotted var(--wine);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--f-mono);
+  font-size: 18px;
+  letter-spacing: 0.1em;
+  color: var(--dim);
+}
+.ident-slot.is-alert {
+  border: 0;
+  background: var(--arterial);
+  color: var(--crypt);
+  font-size: 22px;
+  animation: ident-alarm 0.24s steps(1, end) 3;
+}
+
+/* The GIF is 3 px per art pixel at 228x165; 304x220 makes that a whole 4 px. */
+.ident-frame {
+  position: relative;
+  width: 304px;
+  height: 220px;
+  margin: 14px auto 0;
+  overflow: hidden;
+  background: var(--dither) 0 0 / 4px 4px;
+  outline: 1px solid var(--wine);
+}
+.ident-corners,
+.fr-corners {
+  position: absolute;
+  inset: 5px;
+  z-index: 2;
+  --c: linear-gradient(var(--bone), var(--bone)) no-repeat;
+  background:
+    var(--c) 0 0 / 14px 2px, var(--c) 0 0 / 2px 14px,
+    var(--c) 100% 0 / 14px 2px, var(--c) 100% 0 / 2px 14px,
+    var(--c) 0 100% / 14px 2px, var(--c) 0 100% / 2px 14px,
+    var(--c) 100% 100% / 14px 2px, var(--c) 100% 100% / 2px 14px;
+}
+.ident-beam {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 3px;
+  z-index: 1;
+  background: var(--arterial);
+  box-shadow: 0 0 14px 3px rgba(255, 77, 94, 0.55);
+  animation: ident-sweep 0.9s steps(18, end) infinite alternate;
+}
+.ident-unknown {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--f-mono);
+  font-size: 120px;
+  line-height: 1;
+  color: var(--wine);
+}
+.ident-gif { position: relative; display: block; width: 304px; height: 220px; image-rendering: pixelated; visibility: hidden; }
+.ident-frame::after { content: ''; position: absolute; inset: 0; z-index: 3; background: var(--bone); opacity: 0; pointer-events: none; }
+.ident.is-found .ident-beam,
+.ident.is-found .ident-unknown { display: none; }
+.ident.is-found .ident-gif { visibility: visible; }
+.ident.is-found .ident-frame::after { animation: ident-flash 0.32s steps(4, end) both; }
+
+.ident-plate {
+  height: 76px;
+  box-sizing: border-box;
+  padding-top: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--f-mono);
+}
+.ident-pending { font-size: 18px; letter-spacing: 0.1em; color: var(--dim); animation: vos-blink 1s steps(1, end) infinite; }
+.ident-name {
+  font-size: 50px;
+  line-height: 40px;
+  letter-spacing: 0.04em;
+  text-shadow: 3px 0 0 var(--arterial), -3px 0 0 rgba(245, 163, 193, 0.5);
+  animation: vos-pop 0.2s steps(3, end) both, vos-glitch 2.6s steps(1, end) 0.2s infinite;
+}
+.ident-conf { margin-top: 4px; font-size: 17px; line-height: 20px; letter-spacing: 0.06em; color: var(--dim); }
+
+.ident-traits { border-top: 1px dotted var(--wine); padding: 12px 14px 12px; animation: vos-in 0.3s steps(4, end) both; }
+.ident-traits ul { margin: 7px 0 0; padding: 0; list-style: none; font-family: var(--f-mono); font-size: 17px; line-height: 23px; }
+.ident-traits li { display: flex; align-items: baseline; gap: 10px; }
+.ident-traits li::before { content: ''; flex: 0 0 7px; height: 7px; align-self: center; background: var(--blood); transform: rotate(45deg); }
+.ident-traits li.is-on { animation: ident-trait 0.2s steps(3, end) both; }
+
+.ident-verdict {
+  border-top: 1px dotted var(--wine);
+  padding: 12px 14px 13px;
+  font-family: var(--f-mono);
+  font-size: 19px;
+  line-height: 25px;
+  animation: vos-in 0.3s steps(4, end) both;
+}
+.ident-verdict .ident-step.is-on { animation: vos-pop 0.2s steps(3, end) both; }
+
+@keyframes ident-type { from { width: 0; } to { width: calc(var(--n) * 1ch); } }
+@keyframes ident-sweep { from { transform: none; } to { transform: translateY(217px); } }
+@keyframes ident-alarm { 0% { background: var(--bone); } 50%, 100% { background: var(--arterial); } }
+@keyframes ident-flash { from { opacity: 0.9; } to { opacity: 0; } }
+@keyframes ident-trait { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: none; } }
+
+/* ── 2c · DO_NOT_OPEN/facial_recognition.log: the biometric dossier (facial.js) ──
+   One fixed layout for the intro, the montage, the nine exhibits and the verdict, so
+   nothing moves while browsing: a 9:16 stage (the photos are 900x1600 and are shown
+   whole), a two-line caption and a footer. On a 664px-tall screen the whole window
+   and its back button fit above the music player. */
+.fr { scroll-margin-bottom: calc(var(--player-room, 0px) + 10px); }
+.fr [hidden] { display: none !important; }
+
+.fr-main { display: flex; padding-top: 10px; }
+.fr-side {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--f-mono);
+  font-size: 15px;
+  line-height: 16px;
+  letter-spacing: 0.06em;
+  color: var(--dim);
+}
+.fr-rec { display: flex; align-items: center; gap: 6px; }
+.fr-rec i { width: 8px; height: 8px; background: var(--arterial); animation: vos-blink 1s steps(1, end) infinite; }
+.fr-ruler {
+  flex: 1;
+  width: 14px;
+  background:
+    repeating-linear-gradient(to bottom, var(--dimmer) 0, var(--dimmer) 1px, transparent 1px, transparent 40px),
+    repeating-linear-gradient(to bottom, var(--wine) 0, var(--wine) 1px, transparent 1px, transparent 8px) 50% 0 / 6px 100% no-repeat;
+}
+.fr-hud {
+  width: 54px;
+  height: 40px;
+  box-sizing: border-box;
+  border: 1px solid var(--dimmer);
+  color: var(--dimmer);
+  font-family: var(--f-mono);
+  font-size: 17px;
+  letter-spacing: 0.1em;
+}
+.fr-hud[aria-pressed='true'] { border-color: var(--bone); background: var(--bone); color: var(--crypt); }
+.fr-hud:focus-visible, .fr-nav:focus-visible, .fr-skip:focus-visible, .fr-thumb:focus-visible { outline: 2px solid var(--pink); outline-offset: -3px; }
+
+.fr-stage {
+  position: relative;
+  flex: 0 0 198px;
+  height: 352px;
+  overflow: hidden;
+  background: var(--dither) 0 0 / 4px 4px;
+  outline: 1px solid var(--wine);
+  touch-action: pan-y; /* sideways drags are the swipe */
+  -webkit-user-select: none;
+  user-select: none;
+}
+.fr-photo { display: block; width: 100%; height: 100%; object-fit: contain; -webkit-touch-callout: none; }
+.fr-boxes { position: absolute; inset: 0; pointer-events: none; }
+.fr-corners { pointer-events: none; }
+.fr-stage.is-clean :is(.fr-boxes, .fr-corners) { display: none; }
+
+.fr-box {
+  position: absolute;
+  box-sizing: border-box;
+  border: 2px solid var(--arterial);
+  box-shadow: 0 0 0 1px rgba(10, 5, 6, 0.55);
+  animation: vos-pop 0.2s steps(3, end) 0.1s both;
+}
+.fr-box + .fr-box { animation-delay: 0.22s; }
+.fr.is-scanning .fr-box { animation: none; }
+.fr-tag {
+  position: absolute;
+  left: -2px;
+  bottom: 100%;
+  padding: 0 4px;
+  background: var(--arterial);
+  color: var(--crypt);
+  font: normal 400 14px/15px var(--f-mono);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.fr-tag--r { left: auto; right: -2px; }
+.fr-tag--in { bottom: auto; top: -2px; }
+.fr-tag--below { bottom: auto; top: 100%; }
+
+.fr-beam {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 3px;
+  z-index: 2;
+  background: var(--arterial);
+  box-shadow: 0 0 14px 3px rgba(255, 77, 94, 0.55);
+  opacity: 0;
+  pointer-events: none;
+}
+.fr.is-scanning .fr-beam { opacity: 1; animation: fr-sweep 0.7s steps(14, end) infinite alternate; }
+
+/* Before the scan: the records are sealed. */
+.fr-seal {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  font-family: var(--f-mono);
+}
+.fr-seal.is-off { animation: fr-lift 0.3s steps(4, end) both; }
+.fr-stamp {
+  border: 3px double var(--arterial);
+  padding: 5px 10px 1px;
+  color: var(--arterial);
+  font-size: 32px;
+  line-height: 32px;
+  letter-spacing: 0.06em;
+  transform: rotate(-4deg);
+  animation: vos-stamp 0.35s steps(4, end) both;
+}
+.fr-seal-sub { font-size: 15px; line-height: 16px; letter-spacing: 0.14em; color: var(--dim); }
+.fr-bar { width: 126px; height: 12px; box-sizing: border-box; border: 1px solid var(--bone); padding: 2px; }
+.fr-bar i { display: block; width: 0; height: 100%; background: var(--arterial); }
+
+/* The verdict: all nine at once; each thumbnail reopens its exhibit. */
+.fr-sheet {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3px;
+  align-content: center;
+  background: var(--crypt);
+}
+.fr-thumb { position: relative; aspect-ratio: 9 / 16; overflow: hidden; animation: vos-pop 0.2s steps(3, end) calc(var(--i) * 40ms) both; }
+.fr-thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.fr-thumb b { position: absolute; left: 0; top: 0; padding: 0 3px; background: var(--crypt); font: 400 14px/15px var(--f-mono); color: var(--bone); }
+.fr-thumb:active { opacity: 0.6; }
+
+.fr-sheet:not([hidden]) ~ .fr-corners { display: none; }
+
+.fr-caption { height: 70px; box-sizing: border-box; padding: 8px 12px 0; }
+.fr-title {
+  font-family: var(--f-mono);
+  font-size: 20px;
+  line-height: 20px;
+  color: var(--arterial);
+  white-space: nowrap;
+}
+.fr-title.is-alert { display: inline-block; padding: 0 8px; background: var(--arterial); color: var(--crypt); animation: ident-alarm 0.24s steps(1, end) 3; }
+.fr-note { margin-top: 3px; font-size: 16px; line-height: 19px; }
+.fr-title--verdict + .fr-note { margin-top: 1px; line-height: 17px; color: var(--dim); }
+
+.fr-foot {
+  height: 48px;
+  box-sizing: border-box;
+  border-top: 2px solid var(--bone);
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  font-family: var(--f-mono);
+}
+.fr-progress { display: flex; align-items: center; padding-left: 12px; font-size: 15px; letter-spacing: 0.06em; color: var(--dim); }
+.fr-skip { display: flex; align-items: center; gap: 8px; padding: 0 14px 0 18px; font-family: var(--f-mono); font-size: 20px; letter-spacing: 0.1em; }
+.fr-nav {
+  flex: 0 0 108px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--f-mono);
+  font-size: 20px;
+  letter-spacing: 0.08em;
+}
+.fr-nav:first-child { border-right: 2px solid var(--bone); }
+.fr-nav:last-child { border-left: 2px solid var(--bone); }
+.fr-nav:active, .fr-skip:active { background: var(--velvet); }
+.fr-nav:disabled { color: var(--wine); background: none; cursor: default; }
+.fr-count { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 27px; letter-spacing: 0.08em; }
+
+@keyframes fr-sweep { from { transform: none; } to { transform: translateY(349px); } }
+@keyframes fr-lift { from { opacity: 1; transform: none; } to { opacity: 0; transform: scale(1.35); } }
+
+/* ── 2d · DO_NOT_OPEN/emo_mode.mp4: the hair-physics incident (emo.js) ──────
+   The video is 576x1024 and is shown whole at 9:16, --emo-h tall: as tall as the screen
+   allows, so that the window (158px of chrome around the video) and its back button fit
+   above the music player. 352px on a 664px-tall screen, up to 448px on taller ones.
+   Nothing but the corner marks and one small flag sits over the picture while it plays. */
+.emo { --emo-h: 352px; scroll-margin-bottom: calc(var(--player-room, 0px) + 10px); }
+@supports (height: 100svh) {
+  .emo { --emo-h: clamp(352px, calc(100svh - 230px - var(--player-room, 0px)), 448px); }
+}
+.emo [hidden] { display: none !important; }
+
+.emo-main { display: flex; padding-top: 10px; }
+.emo-side {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--f-mono);
+  font-size: 15px;
+  line-height: 16px;
+  letter-spacing: 0.06em;
+  color: var(--dim);
+}
+/* The rails: fourteen segments filled from the bottom, the top four in the red. */
+.emo-meter { flex: 1; width: 20px; display: flex; flex-direction: column-reverse; gap: 2px; }
+.emo-meter i { flex: 1; box-shadow: inset 0 0 0 1px var(--wine); }
+.emo-meter i.is-on { background: var(--bone); box-shadow: none; }
+.emo-meter i.is-on:nth-child(n + 11) { background: var(--arterial); }
+.emo-value { display: flex; flex-direction: column; align-items: center; }
+.emo-value b { font-weight: 400; font-size: 21px; line-height: 18px; letter-spacing: 0; color: var(--bone); }
+
+.emo-stage {
+  position: relative;
+  flex: 0 0 auto;
+  width: calc(var(--emo-h) * 9 / 16);
+  height: var(--emo-h);
+  overflow: hidden;
+  background: var(--dither) 0 0 / 4px 4px;
+  outline: 1px solid var(--wine);
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.emo-stage.is-hot { outline: 2px solid var(--arterial); --emo-mark: var(--arterial); }
+.emo-video { display: block; width: 100%; height: 100%; object-fit: contain; -webkit-touch-callout: none; }
+.emo-corners {
+  position: absolute;
+  inset: 5px;
+  z-index: 2;
+  pointer-events: none;
+  --c: linear-gradient(var(--emo-mark, var(--bone)), var(--emo-mark, var(--bone))) no-repeat;
+  background:
+    var(--c) 0 0 / 14px 2px, var(--c) 0 0 / 2px 14px,
+    var(--c) 100% 0 / 14px 2px, var(--c) 100% 0 / 2px 14px,
+    var(--c) 0 100% / 14px 2px, var(--c) 0 100% / 2px 14px,
+    var(--c) 100% 100% / 14px 2px, var(--c) 100% 100% / 2px 14px;
+}
+.emo[data-state='ended'] .emo-corners { display: none; }
+
+/* The scan: a beam over the first frame, then a tracker on the hair. */
+.emo-beam {
+  display: none;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 3px;
+  z-index: 2;
+  background: var(--arterial);
+  box-shadow: 0 0 14px 3px rgba(255, 77, 94, 0.55);
+  pointer-events: none;
+}
+.emo[data-state='intro'] .emo-beam { display: block; animation: emo-sweep 0.9s steps(18, end) infinite alternate; }
+.emo-box {
+  position: absolute;
+  left: 23%;
+  top: 11%;
+  width: 44%;
+  height: 24%;
+  z-index: 1;
+  box-sizing: border-box;
+  border: 2px solid var(--bone);
+  box-shadow: 0 0 0 1px rgba(10, 5, 6, 0.55);
+  pointer-events: none;
+  animation: vos-pop 0.2s steps(3, end) both;
+}
+.emo-tag {
+  position: absolute;
+  left: -2px;
+  bottom: 100%;
+  padding: 0 4px;
+  background: var(--bone);
+  color: var(--crypt);
+  font: normal 400 14px/15px var(--f-mono);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.emo-box.is-alert { border-color: var(--arterial); }
+.emo-box.is-alert .emo-tag { background: var(--arterial); }
+
+/* The warning, over the lower half of the first frame: the hair stays in view. */
+.emo-warn { position: absolute; left: 10px; right: 10px; bottom: 16px; z-index: 3; display: flex; flex-direction: column; gap: 12px; }
+.emo-warn-text {
+  padding: 8px 10px 6px;
+  background: var(--arterial);
+  box-shadow: 4px 4px 0 var(--crypt);
+  color: var(--crypt);
+  font-family: var(--f-mono);
+  font-size: 22px;
+  line-height: 21px;
+  letter-spacing: 0.02em;
+  animation: vos-pop 0.2s steps(3, end) both, ident-alarm 0.24s steps(1, end) 3;
+}
+.emo-warn-head { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; font-size: 26px; line-height: 24px; }
+.emo-warn-ico { flex: 0 0 auto; margin-top: -3px; animation: vos-blink 1s steps(1, end) infinite; }
+.emo-go { height: 50px; font-size: 15px; letter-spacing: 0.04em; animation: vos-in 0.3s steps(4, end) 0.45s both; }
+
+/* One small flag in the bottom corner: an incident, a pause or a slow connection. */
+.emo-flag {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  z-index: 2;
+  padding: 1px 6px 0;
+  border: 1px solid var(--arterial);
+  background: var(--crypt);
+  color: var(--arterial);
+  font: normal 400 15px/17px var(--f-mono);
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* The video has ended: the report, over its dimmed last frame. */
+.emo-end {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  box-sizing: border-box;
+  padding: 0 14px 0 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 12px;
+  background: rgba(10, 5, 6, 0.88);
+  font-family: var(--f-mono);
+  cursor: default;
+  animation: emo-fade 0.3s steps(4, end) both;
+}
+.emo-stamp {
+  align-self: center;
+  margin-bottom: 6px;
+  border: 3px double var(--arterial);
+  padding: 5px 9px 1px;
+  color: var(--arterial);
+  font-size: 27px;
+  line-height: 27px;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  transform: rotate(-4deg);
+  animation: vos-stamp 0.35s steps(4, end) 0.15s both;
+}
+.emo-report { margin-bottom: 4px; font-size: 16px; line-height: 21px; letter-spacing: 0.03em; color: var(--dim); }
+.emo-report div { display: flex; justify-content: space-between; gap: 8px; border-bottom: 1px dotted var(--wine); white-space: nowrap; }
+.emo-report b { font-weight: 400; color: var(--bone); }
+.emo-report b.c-red { color: var(--arterial); }
+.emo-end .key { height: 46px; font-size: 16px; }
+
+.emo-caption { height: 70px; box-sizing: border-box; padding: 8px 12px 0; overflow: hidden; }
+.emo-log { font-family: var(--f-mono); font-size: 18px; line-height: 20px; white-space: nowrap; }
+/* Typed by clipping, as in identity.service: the text is whole in the page. */
+.emo-type { display: inline-block; overflow: hidden; white-space: nowrap; vertical-align: bottom; animation: emo-type calc(var(--n) * 16ms) steps(var(--n), end) both; }
+.emo-title { font-family: var(--f-mono); font-size: 20px; line-height: 20px; color: var(--arterial); white-space: nowrap; }
+.emo-title.is-alert { display: inline-block; padding: 0 8px; background: var(--arterial); color: var(--crypt); animation: ident-alarm 0.24s steps(1, end) 3; }
+.emo-note { margin-top: 3px; font-size: 16px; line-height: 19px; }
+.emo-jolt { animation: emo-jolt 0.32s steps(6, end) both; }
+
+.emo-transport {
+  height: 46px;
+  box-sizing: border-box;
+  border-top: 2px solid var(--bone);
+  display: flex;
+  align-items: center;
+  font-family: var(--f-mono);
+}
+.emo-play {
+  flex: 0 0 54px;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 2px solid var(--bone);
+  background: var(--blood-deep);
+}
+.emo-play:active { background: var(--dried); }
+.emo-ico--pause, .emo[data-state='playing'] .emo-ico--play { display: none; }
+.emo[data-state='playing'] .emo-ico--pause { display: block; }
+.emo-play:focus-visible, .emo-seek:focus-visible { outline: 2px solid var(--pink); outline-offset: -3px; }
+.emo-time { flex: 0 0 auto; padding-right: 12px; font-size: 16px; letter-spacing: 0.04em; color: var(--dim); }
+
+/* Seek bar: the song player's, a dithered track filled in blood up to --p. */
+.emo-seek { flex: 1; min-width: 0; height: 30px; margin: 0 12px; -webkit-appearance: none; appearance: none; background: transparent; cursor: pointer; }
+.emo-seek:disabled { opacity: 0.4; cursor: default; }
+.emo-seek::-webkit-slider-runnable-track {
+  height: 6px;
+  border: 1px solid var(--dimmer);
+  background: linear-gradient(to right, var(--blood) var(--p, 0%), transparent var(--p, 0%)), var(--dither) 0 0 / 4px 4px;
+}
+.emo-seek::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  box-sizing: border-box;
+  width: 10px;
+  height: 18px;
+  margin-top: -7px;
+  border: 2px solid var(--crypt);
+  border-radius: 0;
+  background: var(--bone);
+}
+.emo-seek::-moz-range-track {
+  height: 6px;
+  border: 1px solid var(--dimmer);
+  background: linear-gradient(to right, var(--blood) var(--p, 0%), transparent var(--p, 0%)), var(--dither) 0 0 / 4px 4px;
+}
+.emo-seek::-moz-range-thumb { box-sizing: border-box; width: 10px; height: 18px; border: 2px solid var(--crypt); border-radius: 0; background: var(--bone); }
+
+@keyframes emo-sweep { from { transform: none; } to { transform: translateY(calc(var(--emo-h) - 3px)); } }
+@keyframes emo-type { from { width: 0; } to { width: calc(var(--n) * 1ch); } }
+@keyframes emo-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes emo-jolt {
+  0% { transform: none; }
+  20% { transform: translate(-4px, 2px); }
+  40% { transform: translate(4px, -2px); }
+  60% { transform: translate(-3px, -1px); }
+  80% { transform: translate(2px, 1px); }
+  100% { transform: none; }
+}
 
 /* ── 3b · from_luis.mp3: Luis's entrance ─────────────────────────────────
    The stage runs through data-phase: setup (log) → dark (lights out, a flat line) →
@@ -1068,6 +1724,47 @@ body:not([data-theme='dark']) .crt { opacity: 0; }
 .commit-msg { font-family: var(--f-mono); font-size: 26px; line-height: 27px; }
 .commit-aside { font-family: var(--f-mono); font-size: 18px; line-height: 21px; color: var(--pink); }
 .commit-roll { margin-top: 6px; height: 56px; font-size: 20px; letter-spacing: 0.14em; }
+.commit-hint { margin-top: 4px; font-size: 16px; line-height: 21px; text-align: center; }
+.c-content .is-pending { visibility: hidden; } /* ROLL BACK waits for the end of the dialogue */
+.c-slot:empty { display: none; }
+/* Scrolled into view above the player, never under it: the rows as they speak, the key as it appears. */
+.c-guide .op, .lz-cameo, .commit-roll, .naked-btn { scroll-margin-bottom: calc(var(--player-room, 0px) + 18px); }
+.c-found { animation: vos-pop 0.25s steps(3, end) 0.4s both; } /* the letter, back in the folder */
+
+/* Sofi beside the history: the opening's compact guide row, a little larger, with headroom
+   for her jolt and the «?». She slides in from her side; Luis, below, from his. */
+.c-guide { animation: c-guide-in 0.35s steps(4, end) both; }
+.c-luis { animation: c-luis-in 0.35s steps(4, end) both; }
+.c-guide .op.is-compact .op-sofi { flex: 0 0 128px; width: 128px; padding-top: 10px; overflow: hidden; }
+.c-guide .op.is-compact .op-ghost { display: block; } /* the bubble keeps its final size while it types */
+.c-guide .sofi-sprite { transition: transform 0.3s cubic-bezier(0.3, 1.5, 0.5, 1); }
+.c-guide .sofi-sprite.is-sheepish { transform: translateY(6px); transition-timing-function: ease-in; transition-duration: 0.45s; }
+@keyframes c-guide-in { from { opacity: 0; transform: translateX(-14px); } to { opacity: 1; transform: none; } }
+@keyframes c-luis-in { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
+
+/* Luis at the CSS rollback (luis.js, mountLuisCameo): his bubble, and the shrug below it at the
+   right. While he speaks the two shrug frames alternate, a hand-drawn boil, with a small bob;
+   at rest the first one breathes. */
+.lz-cameo { --neon: #d65cff; --bubble: var(--neon); display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+.lz-cameo-text { width: 100%; display: grid; }
+.lz-cameo-text [hidden] { display: none !important; }
+.lz-cameo .op-type { font-size: 20px; line-height: 22px; }
+.lz-cameo .op-tail { left: auto; right: 112px; top: auto; bottom: -8px; margin: 0; border-left: 0; border-top: 0; border-right: 2px solid var(--bubble); border-bottom: 2px solid var(--bubble); }
+.lz-cameo-luis {
+  position: relative;
+  width: 236px;
+  aspect-ratio: 4 / 3;
+  margin-right: -6px;
+  border-bottom: 2px solid var(--bone);
+  transform-origin: 50% 100%;
+  animation: lz-breathe 3.6s ease-in-out infinite;
+}
+.lz-shrug { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+.lz-shrug--2 { visibility: hidden; }
+.lz-cameo-luis.is-speaking { animation: lz-shrug-bob 0.5s ease-in-out infinite; }
+.lz-cameo-luis.is-speaking .lz-shrug--2 { animation: lz-shrug 0.5s step-end infinite; }
+@keyframes lz-shrug { 0%, 100% { visibility: hidden; } 50% { visibility: visible; } }
+@keyframes lz-shrug-bob { 0%, 100% { transform: none; } 50% { transform: translateY(-3px) scale(1.01, 0.99); } }
 
 .sealed-list { display: flex; flex-direction: column; gap: 6px; }
 .sealed {
@@ -1126,6 +1823,22 @@ body:not([data-theme='dark']) .crt { opacity: 0; }
 }
 .naked-btn:active { border-style: inset; }
 .naked-btn:focus-visible, .calm-btn:focus-visible { outline: 2px solid var(--blood); outline-offset: 3px; }
+
+/* The characters' rows and bubbles lost their CSS too: plain boxes in the default serif. The
+   sprites are images and stay as they are. The reset sweep is plain as well. */
+.naked h2 { margin: 14px 0 6px; font-size: 24px; line-height: 28px; font-weight: 700; }
+.naked .is-pending { visibility: hidden; }
+.naked :is(.c-guide, .c-luis) { margin: 16px 0; }
+.naked .op.is-compact .op-sofi { border-bottom: 1px solid #000; }
+.naked .lz-cameo-luis { border-bottom: 1px solid #000; }
+.naked .op-bubble { border: 2px solid #000; background: #fff; box-shadow: none; padding: 6px 8px 10px; }
+.naked .op.is-compact .op-tail, .naked .lz-cameo .op-tail { border-color: #000; background: #fff; }
+.naked .op-name { font: bold 14px/16px 'Times New Roman', Times, serif; letter-spacing: 0; color: #000; }
+.naked .op.is-compact .op-type, .naked .lz-cameo .op-type { font: 16px/20px 'Times New Roman', Times, serif; color: #000; }
+.naked .op-caret, .naked .op-next { background: #000; }
+.naked ~ .wipe { background: rgba(0, 0, 0, 0.25); }
+.naked ~ .wipe .wipe-bar { background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0)); }
+.naked ~ .wipe .wipe-cmd { border: 1px solid #000; background: #fff; color: #000; font: 14px/18px 'Courier New', Courier, monospace; }
 
 /* The original commit */
 .origin {
@@ -1191,118 +1904,139 @@ body:not([data-theme='dark']) .crt { opacity: 0; }
 
 .dawn { animation: dawn 0.9s ease-out both; }
 .dawn--1 { animation-delay: 0.15s; }
-.dawn--2 { animation-delay: 0.75s; }
-.dawn--3 { animation-delay: 1.7s; }
-.dawn--4 { animation-delay: 2.5s; }
-.dawn--5 { animation-delay: 3s; }
-.dawn--6 { animation-delay: 3.4s; }
+.dawn--2 { animation-delay: 0.55s; }
+.dawn--3 { animation-delay: 1.3s; }
+.dawn--4 { animation-delay: 1.9s; }
+.dawn--5 { animation-delay: 2.4s; }
+.dawn--6 { animation-delay: 2.8s; }
 
 /* ── 4 · The recovered message ─────────────────────────────────────────── */
 
 .letter {
   flex: 1;
   box-sizing: border-box;
-  padding: 34px 26px 30px;
+  padding: 34px 26px 36px;
   display: flex;
   flex-direction: column;
-  gap: 22px;
   color: var(--ink);
   font-family: var(--f-letter);
 }
 .letter-file { font-family: var(--f-sysmono); font-size: 12px; line-height: 16px; letter-spacing: 0.04em; color: var(--ink-soft); }
-.letter-open { display: flex; align-items: flex-end; gap: 14px; }
-.sofi-wrap { flex: 0 0 128px; }
-.sofi {
-  width: 128px;
-  height: 128px;
-  background: url('./assets/sofi-blink.webp') 0 0 / 300% 100% no-repeat;
-  animation: sofi-blink 4.2s step-end infinite;
-}
-.sofi-ground { height: 2px; background: var(--ink); }
-/* One blink, a pause and a double blink: the timeline from the Ask Sofi spritesheet. */
-@keyframes sofi-blink {
-  0% { background-position-x: 0%; }
-  42.857% { background-position-x: 50%; }
-  45.238% { background-position-x: 100%; }
-  47.619% { background-position-x: 50%; }
-  50% { background-position-x: 0%; }
-  83.333% { background-position-x: 50%; }
-  85.714% { background-position-x: 100%; }
-  88.095% { background-position-x: 50%; }
-  90.476% { background-position-x: 0%; }
-  92.857% { background-position-x: 50%; }
-  95.238% { background-position-x: 100%; }
-  97.619%, 100% { background-position-x: 50%; }
-}
-.bubble-wrap { flex: 1; min-width: 0; }
-.bubble {
+
+/* Sofi and Luis present the letter, standing on one line across the page. Luis is a still
+   image; Sofi runs 005-favoriting (below). Her stamp leaves her box, so nothing here clips. */
+.duo { margin: 22px -26px 0; }
+.duo-figures {
   position: relative;
-  box-sizing: border-box;
-  border: 1.5px solid var(--ink);
-  border-radius: 16px;
-  background: #fff;
-  padding: 14px 16px 15px;
-  font-size: 18px;
-  line-height: 25px;
-  text-wrap: pretty;
-}
-.bubble-tail {
-  position: absolute;
-  left: -7px;
-  bottom: 30px;
-  width: 12px;
-  height: 12px;
-  box-sizing: border-box;
-  background: #fff;
-  border-left: 1.5px solid var(--ink);
-  border-bottom: 1.5px solid var(--ink);
-  transform: rotate(45deg);
-}
-.letter-turn { font-style: italic; font-size: 29px; line-height: 35px; text-wrap: balance; }
-.letter-body { flex: 1; display: flex; flex-direction: column; gap: 14px; font-size: 19px; line-height: 28px; text-wrap: pretty; }
-.letter-placeholder {
-  flex: 1;
-  min-height: 110px;
-  box-sizing: border-box;
-  border: 1.5px dashed #8d8085;
-  border-radius: 14px;
-  padding: 16px 18px;
   display: flex;
-  flex-direction: column;
+  align-items: flex-end;
   justify-content: center;
-  gap: 6px;
-  font-family: var(--f-sysmono);
-  font-size: 12px;
-  line-height: 18px;
-  color: var(--ink-soft);
+  padding-top: 10px;
 }
-.letter-placeholder-label { letter-spacing: 0.08em; color: var(--ink); }
-.photo-wrap { align-self: center; }
+.duo-luis { position: relative; z-index: 1; display: block; width: 208px; height: auto; margin-left: -20px; }
+.duo-ground { height: 1.5px; background: var(--ink); }
+
+/* 005-favoriting, compiled from _favoriting.scss: «oh!», sunglasses down to look over them, up again
+   with a sparkle, the stamp slams, back to «oh!» (4.15 s loop). Boxes are percentages of a 384 px frame.
+   ::before is the sparkle on the glasses, ::after the stamp (frames: plain, then with impact marks). */
+.fav {
+  position: relative;
+  z-index: 2;
+  flex: 0 0 192px;
+  width: 192px;
+  aspect-ratio: 1;
+  background: url('./assets/favoriting.webp') 0 0 / 300% 100% no-repeat;
+  image-rendering: pixelated;
+  animation: fav-frames 4.15s step-end infinite, fav-shake 4.15s infinite;
+}
+.fav::before,
+.fav::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+  opacity: 0;
+}
+.fav::before {
+  left: 64.844%;
+  top: 45.313%;
+  width: 15.625%;
+  aspect-ratio: 1;
+  background: url('./assets/favoriting-sparkle.webp') 0 0 / 100% 100% no-repeat;
+  animation: fav-twinkle 4.15s infinite;
+}
+.fav::after {
+  left: 55.729%;
+  top: 54.688%;
+  width: 44.271%;
+  aspect-ratio: 170 / 154;
+  background: url('./assets/favoriting-stamp.webp') 0 0 / 200% 100% no-repeat;
+  transform-origin: 47.941% 55.519%;
+  animation: fav-stamp 4.15s step-end infinite, fav-slam 4.15s infinite;
+}
+@keyframes fav-frames {
+  0% { background-position-x: 0%; }
+  12.048% { background-position-x: 50%; }
+  27.711% { background-position-x: 100%; }
+  85.542% { background-position-x: 50%; }
+  93.976%, 100% { background-position-x: 0%; }
+}
+@keyframes fav-shake {
+  0%, 39.759% { transform: translateX(0%); }
+  40.482% { transform: translateX(-0.6%); }
+  41.205% { transform: translateX(0.5%); }
+  41.928% { transform: translateX(-0.3%); }
+  42.651%, 100% { transform: translateX(0%); }
+}
+@keyframes fav-twinkle {
+  0% { opacity: 1; transform: rotate(-45deg) scale(0); animation-timing-function: linear; }
+  28.193% { opacity: 1; transform: rotate(-45deg) scale(0); animation-timing-function: ease-out; }
+  30.12% { opacity: 1; transform: rotate(0deg) scale(1); animation-timing-function: ease-in; }
+  32.048% { opacity: 1; transform: rotate(30deg) scale(0.55); animation-timing-function: ease-in; }
+  34.217% { opacity: 1; transform: rotate(45deg) scale(0); animation-timing-function: linear; }
+  61.446% { opacity: 1; transform: rotate(-45deg) scale(0); animation-timing-function: ease-out; }
+  63.133% { opacity: 1; transform: rotate(0deg) scale(0.6); animation-timing-function: ease-in; }
+  65.542%, 100% { opacity: 1; transform: rotate(45deg) scale(0); animation-timing-function: linear; }
+}
+@keyframes fav-stamp {
+  0% { background-position-x: 0%; }
+  39.759%, 100% { background-position-x: 100%; }
+}
+@keyframes fav-slam {
+  0%, 36.145% { opacity: 0; transform: rotate(9deg) scale(1.9); animation-timing-function: linear; }
+  37.108% { opacity: 1; transform: rotate(7deg) scale(1.6); animation-timing-function: cubic-bezier(0.55, 0, 1, 1); }
+  39.759% { opacity: 1; transform: rotate(-2deg) scale(0.92); animation-timing-function: ease-out; }
+  41.928% { opacity: 1; transform: rotate(1deg) scale(1.05); animation-timing-function: ease-in-out; }
+  44.819% { opacity: 1; transform: rotate(0deg) scale(1); animation-timing-function: linear; }
+  81.928% { opacity: 1; transform: rotate(0deg) scale(1); animation-timing-function: ease-in; }
+  85.301%, 100% { opacity: 0; transform: rotate(-3deg) scale(0.85); animation-timing-function: linear; }
+}
+
+/* The letter itself: one text, room to breathe. */
+.letter-text { margin-top: 36px; font-size: 19px; line-height: 29px; text-wrap: pretty; }
+.letter-opening { font-size: 20px; line-height: 30px; }
+.letter-rule { width: 28px; height: 1.5px; margin: 30px 0 28px; background: var(--ink); }
+.letter-body { display: flex; flex-direction: column; gap: 17px; }
+.letter-wish { margin: 10px 0 6px; font-style: italic; font-size: 29px; line-height: 36px; }
+.letter-sign { margin-top: 32px; }
+.letter-signed { margin-top: 4px; font-style: italic; font-size: 27px; line-height: 34px; }
+
+.photo-wrap { align-self: center; margin-top: 44px; }
 .photo {
-  width: 244px;
+  width: 232px;
   box-sizing: border-box;
   padding: 10px 10px 30px;
   background: #fff;
   border: 1.5px solid var(--ink);
+  box-shadow: 0 10px 28px rgba(29, 20, 24, 0.1);
   transform: rotate(-2deg);
 }
 .photo-img { display: block; width: 100%; height: auto; }
-.photo-placeholder {
-  height: 146px;
-  box-sizing: border-box;
-  padding: 0 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  background: repeating-linear-gradient(135deg, rgba(29, 20, 24, 0.1) 0, rgba(29, 20, 24, 0.1) 1px, transparent 1px, transparent 9px), #f1ebe8;
-  font-family: var(--f-sysmono);
-  font-size: 12px;
-  line-height: 18px;
-  letter-spacing: 0.04em;
-  color: #4f4449;
-}
-.heart { align-self: center; flex: 0 0 24px; }
+.heart { align-self: center; flex: 0 0 24px; margin-top: 40px; }
+.letter-again { margin-top: 36px; font-size: 16px; letter-spacing: 0.18em; }
+
+/* Leaving the initial commit for the letter */
+.origin.is-leaving { animation: dusk 0.45s ease-in forwards; pointer-events: none; }
+@keyframes dusk { to { opacity: 0; transform: translateY(-8px); } }
 
 /* ── Persistent player: davids_theme.wav (music.js) ──────────────────────
    Fixed to the bottom, outside the screens; .stage keeps --player-room free below its

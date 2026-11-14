@@ -46,7 +46,7 @@ const sprite = `
   <span class="sofi-sprite" data-sofi="asleep" aria-hidden="true">
     <span data-layer="body"><span data-layer="pose"></span><span data-layer="lids"></span><span data-layer="mouth"></span></span>
     <span data-layer="talk"></span>
-    <span data-layer="face"></span><span data-layer="sparkle"></span>
+    <span data-layer="face"></span><span data-layer="sparkle"></span><span data-layer="grin"></span>
     <span data-layer="z1"></span><span data-layer="z2"></span><span data-layer="z3"></span>
     <span data-layer="burst"></span>
   </span>
@@ -68,8 +68,13 @@ const scene = `
 `;
 
 // `lines` replaces the dialogue and `awake` skips the wake-up (Sofi starts talking at once);
-// both are used for her Debug Mode introduction.
-export function mountOpening(host, { scope, onWake, onDone, lines = LINES, awake = false }) {
+// both are used for her Debug Mode introduction. The empty-gift scene also uses `startAfter`
+// (ms before she starts talking), `pose(page, 'type' | 'read')` (her sprite state while a line
+// is typed / waiting; falsy = talking), `holds` (extra pause per line), `reaction: false`
+// (no 009 smirk sequence) and `inset` (she stands inside the host, the bubble above her).
+// `compact` is the small guide row (sprite left, bubble right), as beside the update choices;
+// the Commit Crypt uses it, and `say()` for lines she adds after someone else has spoken.
+export function mountOpening(host, { scope, onWake, onDone, lines = LINES, awake = false, startAfter = 0, pose, holds, reaction = true, inset = false, compact = false }) {
   host.innerHTML = scene;
   const ref = (name) => host.querySelector(`[data-ref="${name}"]`);
   const op = ref('op');
@@ -81,9 +86,24 @@ export function mountOpening(host, { scope, onWake, onDone, lines = LINES, awake
   const soundData = fetch(talkingSound).then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error('voice'))));
   soundData.catch(() => {});
   const voice = createSpeechAudio({ src: talkingSound, fetchData: () => soundData });
-  const dialogue = createDialogue({ scope, host, lines, voice, mouth: spriteEl, anchor: op, onDone: react });
+  // One dialogue per stretch of lines: the scene's own, then any later say().
+  const speech = (lines, { pose, holds, onDone }) =>
+    createDialogue({
+      scope,
+      host,
+      lines,
+      voice,
+      mouth: spriteEl,
+      anchor: op,
+      onDone,
+      holds,
+      onPage: pose && ((page, when) => (spriteEl.dataset.sofi = pose(page, when) || 'talking')),
+    });
+  let dialogue = speech(lines, { pose, holds, onDone: react });
+  if (inset) op.classList.add('is-inset');
+  if (compact) op.classList.add('is-compact');
 
-  let phase = 'asleep'; // asleep | waking | talking | reacting | done
+  let phase = awake ? 'waiting' : 'asleep'; // asleep | waking | waiting | talking | reacting | done
   let taps = [];
   let shown = 0; // level on screen (lags behind while she dozes off)
   let dozeTimer = null;
@@ -174,7 +194,7 @@ export function mountOpening(host, { scope, onWake, onDone, lines = LINES, awake
     sofi.disabled = true;
     sofi.removeAttribute('aria-label');
     let at = dialogue.quiet() + REACTION_DELAY; // once her voice has faded
-    for (const [face, ms] of REACTION) {
+    for (const [face, ms] of reaction ? REACTION : []) {
       scope.after(at, () => {
         spriteEl.classList.remove('is-speaking');
         spriteEl.dataset.sofi = face;
@@ -190,16 +210,50 @@ export function mountOpening(host, { scope, onWake, onDone, lines = LINES, awake
 
   const onClick = (event) => {
     if (phase === 'asleep' && event.target.closest('[data-ref="sofi"]')) poke();
-    else if (phase === 'talking') dialogue.advance();
+    else if (phase === 'talking') {
+      void voice.prepare(); // a reload resumes her introduction without a gesture: this tap unlocks her voice
+      dialogue.advance();
+    }
   };
   op.addEventListener('click', onClick);
 
   if (awake) {
     void voice.prepare(); // still inside the tap that opened this screen
-    startTalking();
+    if (startAfter > 0) {
+      spriteEl.dataset.sofi = 'talking'; // at rest (blinking, mouth closed) until she speaks
+      ref('wait').hidden = true;
+      sofi.setAttribute('aria-label', 'Sofi');
+      scope.after(startAfter, startTalking);
+    } else startTalking();
   }
 
   return {
+    setPose(name) {
+      spriteEl.dataset.sofi = name;
+    },
+    sheepish(on) {
+      spriteEl.classList.toggle('is-sheepish', on); // shoulders drop (and straighten again)
+    },
+    // More lines later in the same scene (someone else may have spoken in between): the same
+    // bubble, voice and taps, no 009 reaction. `pose` and `holds` work as in the options.
+    say(lines, { pose, holds, onDone } = {}) {
+      dialogue.dispose();
+      dialogue = speech(lines, {
+        pose,
+        holds,
+        onDone: () =>
+          scope.after(dialogue.quiet() + REACTION_DELAY, () => {
+            phase = 'done';
+            sofi.disabled = true;
+            onDone?.();
+          }),
+      });
+      phase = 'talking';
+      sofi.disabled = false;
+      sofi.setAttribute('aria-label', 'Sofi is talking. Tap to continue.');
+      spriteEl.dataset.sofi = 'talking';
+      dialogue.start(250);
+    },
     dispose() {
       op.removeEventListener('click', onClick);
       stopDoze();

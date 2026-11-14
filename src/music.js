@@ -6,7 +6,7 @@ import songUrl from './assets/davids-theme.mp3';
 //
 // Media that must not play over the song calls hold(reason) and release(reason): the song
 // pauses and, once every hold is released, resumes only if it was playing before. Luis's
-// entrance uses it on a replay; emo_mode.mp4 should do the same while its video plays.
+// entrance uses it on a replay; emo_mode.mp4 (emo.js) does the same while its video plays.
 
 export const TRACK = { title: 'davids_theme.wav', artist: 'Luis', duration: 170.4 };
 

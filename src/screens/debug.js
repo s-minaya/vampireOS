@@ -2,11 +2,17 @@ import { createScope, onAction, escapeHtml } from '../util.js';
 import { ORIGINAL_SOURCE, runChecks } from '../puzzle.js';
 import { mountOpening } from './opening.js';
 import { mountLuis, preloadLuis } from './luis.js';
+import { mountIdentity } from './identity.js';
+import { mountFacial, preloadFaces } from './facial.js';
+import { mountEmo, preloadEmo } from './emo.js';
+import needsContext from '../assets/needs-context.webp';
+import needsContextQuestion from '../assets/needs-context-question.webp';
+import needsContextFace from '../assets/needs-context-face.webp';
 
 // Beat 3: debug mode, the fake filesystem, the typed code puzzle and the
 // empty gift folder that leads to the commit history.
 
-const icons = {
+export const icons = {
   file: (stroke) => `<svg class="ico" aria-hidden="true" viewBox="0 0 22 26" width="22" height="26"><path d="M2 1 H14 L20 7 V25 H2 Z" fill="none" stroke="${stroke}" stroke-width="2"/><path d="M14 1 V7 H20" fill="none" stroke="${stroke}" stroke-width="2"/></svg>`,
   folder: `<svg class="ico" aria-hidden="true" viewBox="0 0 22 26" width="22" height="26"><path d="M1 5 H9 L11 8 H21 V23 H1 Z" fill="none" stroke="#8f8175" stroke-width="2"/></svg>`,
   lock: `<svg class="ico" role="img" aria-label="Locked" viewBox="0 0 22 26" width="22" height="26"><rect x="3" y="11" width="16" height="13" fill="none" stroke="#8f8175" stroke-width="2"/><path d="M7 11 V7 A4 4 0 0 1 15 7 V11" fill="none" stroke="#8f8175" stroke-width="2"/></svg>`,
@@ -65,10 +71,11 @@ const filesView = `
         ${icons.file('#8f8175')}
         <div class="row-text"><div class="row-name">backend/what_is_rap.txt</div><div class="row-meta">0 bytes</div></div>
       </div>
-      <div class="row row--dim">
+      <button class="row row--open" data-act="dno">
         ${icons.folder}
-        <div class="row-text"><div class="row-name">DO_NOT_OPEN/</div><div class="row-meta">3 files</div></div>
-      </div>
+        <span class="row-text"><span class="row-name">DO_NOT_OPEN/</span><span class="row-meta c-dim">3 files</span></span>
+        ${icons.next}
+      </button>
       <button class="row row--open" data-act="code">
         ${icons.file('#eadfcf')}
         <span class="row-text"><span class="row-name">backend/please_work.js</span><span class="row-meta c-red">1 error</span></span>
@@ -101,6 +108,64 @@ const luisView = `
   <div class="d-stack d-stack--tight enter">
     ${backButton}
     <div class="d-stack d-stack--tight" data-ref="luis"></div>
+  </div>
+`;
+
+// DO_NOT_OPEN/: three files David was asked not to open. Each has its own scene.
+const dnoView = `
+  <div class="d-stack d-stack--tight enter">
+    ${backButton}
+    <div class="win">
+      ${winBar('/vampireos/DO_NOT_OPEN')}
+      <button class="row row--open" data-act="identity">
+        ${icons.file('#eadfcf')}
+        <span class="row-text"><span class="row-name">identity.service</span></span>
+        ${icons.next}
+      </button>
+      <button class="row row--open" data-act="facial">
+        ${icons.file('#eadfcf')}
+        <span class="row-text"><span class="row-name">facial_recognition.log</span></span>
+        ${icons.next}
+      </button>
+      <button class="row row--open row--last" data-act="emo">
+        ${icons.file('#eadfcf')}
+        <span class="row-text"><span class="row-name">emo_mode.mp4</span></span>
+        ${icons.next}
+      </button>
+      <div class="win-status"><span>3 items</span><span>debug mode</span></div>
+    </div>
+  </div>
+`;
+
+const folderBack = `<button class="back" data-act="dno">${icons.back}<span>/vampireos/DO_NOT_OPEN</span></button>`;
+
+// DO_NOT_OPEN/identity.service: the scan itself is identity.js; back returns to the folder.
+const identityView = `
+  <div class="d-stack d-stack--tight enter">
+    ${folderBack}
+    <div class="win ident" data-ref="identity">
+      ${winBar('identity.service')}
+    </div>
+  </div>
+`;
+
+// DO_NOT_OPEN/facial_recognition.log: the dossier itself is facial.js.
+const facialView = `
+  <div class="d-stack d-stack--tight enter">
+    ${folderBack}
+    <div class="win fr" data-ref="facial">
+      ${winBar('facial_recognition.log')}
+    </div>
+  </div>
+`;
+
+// DO_NOT_OPEN/emo_mode.mp4: the hair-physics incident itself is emo.js.
+const emoView = `
+  <div class="d-stack d-stack--tight enter">
+    ${folderBack}
+    <div class="win emo" data-ref="emo">
+      ${winBar('emo_mode.mp4')}
+    </div>
   </div>
 `;
 
@@ -180,8 +245,12 @@ const fixedView = `
   </div>
 `;
 
-// The empty folder must not explain itself (VAMPIREOS.md, beat 4).
-const giftView = `
+const historyButton = '<button class="key key--md" data-act="history">VERSION HISTORY</button>';
+
+// The empty folder must not explain itself (VAMPIREOS.md, beat 4), and it is not an input: no cursor.
+// Sofi (data-ref="guide") reacts once, inside the folder itself; VERSION HISTORY is revealed when
+// she has finished, or at once on a later visit.
+const giftView = (heard) => `
   <div class="d-stack enter">
     <h1 class="d-title">Your Gift</h1>
     <div class="win">
@@ -194,13 +263,48 @@ const giftView = `
           <path d="M40 0 L46.1 30.6 L63.4 56.6 L89.4 73.9 L120 80" fill="none" stroke="#8f8175" stroke-width="1"/>
           <path d="M15 0 L23 40.2 L45.8 74.2 L79.8 97 L120 105" fill="none" stroke="#8f8175" stroke-width="1"/>
         </svg>
-        <span class="cursor void-cursor" aria-hidden="true"></span>
+        ${heard ? '' : '<div class="gift-sofi" data-ref="guide" hidden></div>'}
       </div>
       <div class="win-status win-status--bright"><span>0 items</span><span>0 bytes</span></div>
     </div>
-    <button class="key key--md" data-act="history">VERSION HISTORY</button>
+    <div class="gift-next" data-ref="history-slot">${heard ? historyButton : ''}</div>
   </div>
 `;
+
+// Sofi's reaction to the empty folder (approved dialogue, verbatim). She speaks with her usual
+// talking sprite and voice; around the bubbles she acts with frames of 010-needs-context and one
+// of 004-talking: she rises into the folder, looks («¿mm?» + ?), thinks (chin), then looks down
+// and slumps (sheepish) for the awkward lines, straightens up on "Good news", goes sly (finger on
+// lips + sparkle) and ends with the needs-context smile as VERSION HISTORY appears.
+const GIFT_LINES = [
+  'This is awkward.',
+  "Your gift should be here. It isn't.",
+  'Good news: I included Git as a premium birthday feature.',
+  'Try Version History. We might be able to recover something.',
+];
+const GIFT_HOLDS = [0, 900, 0, 0]; // a longer comic beat after "It isn't."
+const GIFT_BETWEEN = ['lowered', 'lowered', 'sly']; // pose while each of the first three bubbles waits
+const GIFT_BEATS = [
+  ['rise', 1200], // the empty folder alone, then she rises from behind the status bar
+  ['puzzled', 700], // ...looks: head tilt and the ?
+  ['thinking', 1000], // ...finger on the chin
+  ['lowered', 900], // ...eyes down, shoulders drop
+  ['talk', 650], // ...and "This is awkward."
+];
+const GIFT_BUTTON_DELAY = 500; // after her last word
+
+// Fetched and decoded when Debug Mode opens, so the frames never pop in (not in CRITICAL_SPRITES:
+// the opening does not need them).
+let guideImages = null;
+function preloadGuide() {
+  if (guideImages) return;
+  guideImages = [needsContext, needsContextQuestion, needsContextFace].map((src) => {
+    const img = new Image();
+    img.src = src;
+    img.decode().catch(() => {});
+    return img;
+  });
+}
 
 function describeRun(result) {
   const lines = ['<div class="c-dim">$ run backend/please_work.js</div>'];
@@ -233,10 +337,12 @@ function describeRun(result) {
 
 const outputHtml = (run) => `<div class="out-lines">${run.lines.join('')}</div><div class="voice out-verdict">${run.verdict}</div>`;
 
-export function mountDebug(root, app, options = {}) {
+export function mountDebug(root, app) {
   const scope = createScope();
-  let scene = null; // Sofi's intro or Luis's file: disposed when the view changes
-  const state = { view: options.intro ? 'intro' : 'files', patched: false, code: ORIGINAL_SOURCE, output: idleOutput, locked: false };
+  let scene = null; // Sofi's intro, Luis's file or a DO_NOT_OPEN file: disposed when the view changes
+  // Sofi's introduction comes first until it has been heard to the end, however Debug Mode is
+  // reached (from the failed update or a reload); after that, never again in this playthrough.
+  const state = { view: app.introHeard() ? 'files' : 'intro', patched: false, code: ORIGINAL_SOURCE, output: idleOutput, locked: false };
   const ref = (name) => root.querySelector(`[data-ref="${name}"]`);
 
   function render() {
@@ -245,16 +351,90 @@ export function mountDebug(root, app, options = {}) {
       files: filesView,
       luis: luisView,
       arch: archView,
+      dno: dnoView,
+      identity: identityView,
+      facial: facialView,
+      emo: emoView,
       code: codeView(state.output),
       fixed: fixedView,
-      gift: giftView,
+      gift: giftView(app.giftHeard()),
     };
     root.innerHTML = `${strip(state.patched)}<div class="d-content">${views[state.view]}</div>`;
     if (state.view === 'code') ref('input').value = state.code;
     if (state.view === 'intro') {
-      scene = mountOpening(ref('intro'), { scope, lines: INTRO_LINES, awake: true, onDone: () => show('files') });
+      scene = mountOpening(ref('intro'), {
+        scope,
+        lines: INTRO_LINES,
+        awake: true,
+        onDone: () => {
+          app.markIntroHeard();
+          show('files');
+        },
+      });
     }
+    if (state.view === 'gift' && ref('guide')) scene = mountGiftGuide();
     if (state.view === 'luis') scene = mountLuis(ref('luis'), { scope });
+    if (state.view === 'identity') scene = mountIdentity(ref('identity'));
+    if (state.view === 'facial') scene = mountFacial(ref('facial'));
+    if (state.view === 'emo') scene = mountEmo(ref('emo'), { onClose: () => show('dno') });
+    if (state.view === 'dno') {
+      preloadFaces(); // so the dossier's photos are ready when it opens
+      preloadEmo(); // and the video's first frame (never the video itself)
+    }
+  }
+
+  // The one-time scene at the empty folder. Runs on its own scope so leaving the view clears it.
+  // It mounts straight away, inside the OPEN GIFT tap, so her voice is unlocked; she only appears
+  // (and starts talking) after a beat of empty folder. Completion is saved only when she finishes.
+  function mountGiftGuide() {
+    const local = createScope();
+    const guide = ref('guide');
+    const startAfter = GIFT_BEATS.reduce((sum, [, ms]) => sum + ms, 0);
+    const sofi = mountOpening(guide, {
+      scope: local,
+      lines: GIFT_LINES,
+      awake: true,
+      startAfter,
+      inset: true,
+      pose: (page, when) => {
+        if (when === 'type' && page === 2) sofi.sheepish(false); // "Good news": she straightens up
+        return when === 'read' ? GIFT_BETWEEN[page] : 'talking';
+      },
+      holds: GIFT_HOLDS,
+      reaction: false,
+      onDone: () => {
+        app.markGiftHeard();
+        sofi.setPose('pleased');
+        local.after(GIFT_BUTTON_DELAY, () => {
+          const next = ref('history-slot');
+          if (!next) return;
+          next.innerHTML = historyButton;
+          next.firstElementChild.classList.add('pop');
+          next.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      },
+    });
+    let at = 0;
+    for (const [beat, ms] of GIFT_BEATS) {
+      at += ms;
+      if (beat === 'rise') {
+        local.after(at, () => {
+          guide.hidden = false; // the rise animation starts as she is displayed
+          guide.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      } else if (beat !== 'talk') {
+        local.after(at, () => {
+          sofi.setPose(beat);
+          if (beat === 'lowered') sofi.sheepish(true);
+        });
+      }
+    }
+    return {
+      dispose() {
+        sofi.dispose();
+        local.dispose();
+      },
+    };
   }
 
   function show(view) {
@@ -296,6 +476,10 @@ export function mountDebug(root, app, options = {}) {
     files: () => show('files'),
     luis: () => show('luis'),
     arch: () => show('arch'),
+    dno: () => show('dno'),
+    identity: () => show('identity'),
+    facial: () => show('facial'),
+    emo: () => show('emo'),
     code: () => show('code'),
     gift: () => show('gift'),
     history: () => app.go('crypt'),
@@ -330,6 +514,7 @@ export function mountDebug(root, app, options = {}) {
 
   render();
   preloadLuis(); // so from_luis.mp3 opens without a wait
+  preloadGuide();
 
   return () => {
     off();

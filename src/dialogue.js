@@ -31,8 +31,10 @@ function charKind(char) {
 
 // `host` contains the bubble markup; `mouth` gets `.is-speaking` while the voice is audible;
 // `anchor` is scrolled into view for each line. `onDone` fires when the last line is typed
-// (the voice may still be fading: see `quiet()`).
-export function createDialogue({ scope, host, lines, voice, mouth, anchor, onDone }) {
+// (the voice may still be fading: see `quiet()`). Optional: `holds[i]` adds ms to the pause
+// after line i, and `onPage(i, 'type' | 'read')` fires when line i starts typing and when it
+// is finished (not for the last line), so a scene can change expression between bubbles.
+export function createDialogue({ scope, host, lines, voice, mouth, anchor, onDone, holds, onPage }) {
   const ref = (name) => host.querySelector(`[data-ref="${name}"]`);
   let page = 0;
   let typeTimer = null;
@@ -84,6 +86,7 @@ export function createDialogue({ scope, host, lines, voice, mouth, anchor, onDon
     ref('caret').hidden = false;
     ref('next').classList.remove('is-on');
     ref('live').textContent = text;
+    onPage?.(page, 'type');
 
     const tick = () => {
       index += 1;
@@ -111,7 +114,8 @@ export function createDialogue({ scope, host, lines, voice, mouth, anchor, onDon
       return;
     }
     ref('next').classList.add('is-on');
-    readTimer = scope.after(READ(lines[page]), nextPage);
+    onPage?.(page, 'read');
+    readTimer = scope.after(READ(lines[page]) + (holds?.[page] || 0), nextPage);
   }
 
   function nextPage() {
